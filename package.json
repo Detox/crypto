@@ -1,0 +1,32 @@
+{
+	"name"            : "detox-crypto",
+	"description"     : "",
+	"keywords"        : [],
+	"version"         : "",
+	"homepage"        : "https://github.com/Detox/detox-crypto",
+	"author"          : {
+		"name"  : "Nazar Mokrynskyi",
+		"email" : "nazar@mokrynskyi.com",
+		"url"   : "https://cleverstyle.org"
+	},
+	"repository"      : {
+		"type" : "git",
+		"url"  : "git://github.com/Detox/detox-crypto.git"
+	},
+	"licenses"        : [
+		{
+			"type" : "MIT",
+			"url"  : "https://github.com/Detox/detox-crypto/blob/master/license.txt"
+		}
+	],
+	"bugs"            : "https://github.com/Detox/detox-crypto/issues",
+	"docs"            : "https://github.com/Detox/detox-crypto",
+	"main"            : "src/index.js",
+	"files"           : [
+		"src"
+	],
+	"scripts"         : {
+		"test" : "tape test/**/*.js"
+	},
+	"devDependencies" : {}
+}
