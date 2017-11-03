@@ -1,5 +1,5 @@
 {
-	"name"            : "detox-crypto",
+	"name"            : "@detox/crypto",
 	"description"     : "",
 	"keywords"        : [],
 	"version"         : "",
@@ -28,5 +28,8 @@
 	"scripts"         : {
 		"test" : "tape test/**/*.js"
 	},
-	"devDependencies" : {}
+	"devDependencies" : {},
+	"dependencies"    : {
+		"supercop.wasm" : "^4.1.0"
+	}
 }
