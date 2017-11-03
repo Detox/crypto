@@ -6,5 +6,29 @@
  * @license   MIT License, see license.txt
  */
 (function(){
-
+  function Crypto(supercop, aez, noiseC){
+    /**
+     * @return {!Object} Object with keys `public` and `private` that contain `Uint8Array` with public and private keys respectively
+     */
+    var generate_keypair;
+    generate_keypair = function(){
+      var keys;
+      keys = supercop.createKeyPair(supercop.createSeed());
+      return {
+        'public': keys.publicKey,
+        'private': keys.secretKey
+      };
+    };
+    return {
+      'ready': Promise.all([supercop.ready]).then(function(){}),
+      'generate_keypair': generate_keypair
+    };
+  }
+  if (typeof define === 'function' && define.amd) {
+    define(['supercop.wasm', 'aez.wasm', 'noise-c.wasm'], Crypto);
+  } else if (typeof exports === 'object') {
+    module.exports = Crypto(require('supercop.wasm'), require('aez.wasm'), require('noise-c.wasm'));
+  } else {
+    this['async_eventer'] = Crypto(this['supercop_wasm'], this['aez_wasm'], this['noise_c_wasm']);
+  }
 }).call(this);
