@@ -6,7 +6,7 @@
  * @license   MIT License, see license.txt
  */
 (function(){
-  var randombytes;
+  var randombytes, NOISE_PROTOCOL_NAME;
   if (typeof exports === 'object') {
     randombytes = require('crypto').randomBytes;
   } else {
@@ -17,6 +17,7 @@
       return array;
     };
   }
+  NOISE_PROTOCOL_NAME = 'Noise_IK_25519_ChaChaPoly_BLAKE2b';
   /**
    * Increment nonce from `nonce` argument in place
    *
@@ -68,6 +69,8 @@
       return ed2curve.convertPublicKey(keys.publicKey);
     };
     /**
+     * @constructor
+     *
      * @param {Uint8Array} key Empty when initialized by initiator and specified on responder side
      *
      * @return {Rewrapper}
@@ -113,11 +116,98 @@
       enumerable: false,
       value: Rewrapper
     });
+    /**
+     * @constructor
+     *
+     * @param {boolean} initiator
+     * @param {!Uint8Array} key Responder's public X25519 key if `initiator` is `true` or responder's private X25519 key if `initiator` is `false`
+     *
+     * @return {Encryptor}
+     *
+     * @throws {Error}
+     */
+    function Encryptor(initiator, key){
+      if (!(this instanceof Encryptor)) {
+        return new Encryptor(initiator, key);
+      }
+      if (initiator) {
+        this._handshake_state = noiseC.HandshakeState(NOISE_PROTOCOL_NAME, noiseC.constants.NOISE_ROLE_INITIATOR);
+        return this._handshake_state.Initialize(null, null, key);
+      } else {
+        this._handshake_state = noiseC.HandshakeState(NOISE_PROTOCOL_NAME, noiseC.constants.NOISE_ROLE_RESPONDER);
+        return this._handshake_state.Initialize(null, key);
+      }
+    }
+    Rewrapper.prototype = {
+      /**
+       * @return {Uint8Array} Handshake message that should be sent to the other side or `null` otherwise
+       *
+       * @throws {Error}
+       */
+      'get_handshake_message': function(){
+        var message, ref$;
+        message = null;
+        if (!this._send_cipher_state) {
+          if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_WRITE_MESSAGE) {
+            message = this._handshake_state.WriteMessage();
+          }
+          if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_SPLIT) {
+            ref$ = this._handshake_state.Split(), this._send_cipher_state = ref$[0], this._receive_cipher_state = ref$[1];
+          } else if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_FAILED) {
+            throw new Error('Noise handshake failed');
+          }
+        }
+        return message;
+      }
+      /**
+       * @param {!Uint8Array} message Handshake message received from the other side
+       *
+       * @throws {Error}
+       */,
+      'put_handshake_message': function(message){
+        var ref$;
+        if (!this._send_cipher_state) {
+          if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_READ_MESSAGE) {
+            this._handshake_state.ReadMessage(message);
+          }
+          if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_SPLIT) {
+            ref$ = this._handshake_state.Split(), this._send_cipher_state = ref$[0], this._receive_cipher_state = ref$[1];
+          } else if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_FAILED) {
+            throw new Error('Noise handshake failed');
+          }
+        }
+      }
+      /**
+       * @param {!Uint8Array} plaintext
+       *
+       * @return {!Uint8Array}
+       *
+       * @throws {Error}
+       */,
+      'encrypt': function(plaintext){
+        return this._send_cipher_state.EncryptWithAd(new Uint8Array(0), plaintext);
+      }
+      /**
+       * @param {!Uint8Array} ciphertext
+       *
+       * @return {!Uint8Array}
+       *
+       * @throws {Error}
+       */,
+      'decrypt': function(ciphertext){
+        return this._receive_cipher_state.DecryptWithAd(new Uint8Array(0), ciphertext);
+      }
+    };
+    Object.defineProperty(Encryptor.prototype, 'constructor', {
+      enumerable: false,
+      value: Encryptor
+    });
     return {
       'ready': Promise.all([supercop.ready, aez.ready, noiseC.ready]).then(function(){}),
       'create_keypairs': create_keypairs,
       'convert_public_key': convert_public_key,
-      'Rewrapper': Rewrapper
+      'Rewrapper': Rewrapper,
+      'Encryptor': Encryptor
     };
   }
   if (typeof define === 'function' && define.amd) {

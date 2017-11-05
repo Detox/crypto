@@ -12,6 +12,8 @@ else
 		crypto.getRandomValues(array)
 		array
 
+const NOISE_PROTOCOL_NAME = 'Noise_IK_25519_ChaChaPoly_BLAKE2b'
+
 /**
  * Increment nonce from `nonce` argument in place
  *
@@ -51,6 +53,8 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 	convert_public_key = (public_key) ->
 		ed2curve.convertPublicKey(keys.publicKey)
 	/**
+	 * @constructor
+	 *
 	 * @param {Uint8Array} key Empty when initialized by initiator and specified on responder side
 	 *
 	 * @return {Rewrapper}
@@ -87,12 +91,79 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 			# No need to catch exception since we don't have ciphertext expansion
 			aez.decrypt(ciphertext, new Uint8Array, @_nonce, @_key, 0)
 	Object.defineProperty(Rewrapper::, 'constructor', {enumerable: false, value: Rewrapper})
-	# TODO: end-to-end encryption
+	/**
+	 * @constructor
+	 *
+	 * @param {boolean} initiator
+	 * @param {!Uint8Array} key Responder's public X25519 key if `initiator` is `true` or responder's private X25519 key if `initiator` is `false`
+	 *
+	 * @return {Encryptor}
+	 *
+	 * @throws {Error}
+	 */
+	function Encryptor (initiator, key)
+		if !(@ instanceof Encryptor)
+			return new Encryptor(initiator, key)
+		if initiator
+			@_handshake_state	= noise-c.HandshakeState(NOISE_PROTOCOL_NAME, noise-c.constants.NOISE_ROLE_INITIATOR)
+			@_handshake_state.Initialize(null, null, key)
+		else
+			@_handshake_state	= noise-c.HandshakeState(NOISE_PROTOCOL_NAME, noise-c.constants.NOISE_ROLE_RESPONDER)
+			@_handshake_state.Initialize(null, key)
+	Rewrapper::	=
+		/**
+		 * @return {Uint8Array} Handshake message that should be sent to the other side or `null` otherwise
+		 *
+		 * @throws {Error}
+		 */
+		'get_handshake_message' : ->
+			message	= null
+			if !@_send_cipher_state
+				if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_WRITE_MESSAGE
+					message	= @_handshake_state.WriteMessage()
+				if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_SPLIT
+					[@_send_cipher_state, @_receive_cipher_state] = @_handshake_state.Split()
+				else if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_FAILED
+					throw new Error('Noise handshake failed')
+			message
+		/**
+		 * @param {!Uint8Array} message Handshake message received from the other side
+		 *
+		 * @throws {Error}
+		 */
+		'put_handshake_message' : (message) !->
+			if !@_send_cipher_state
+				if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_READ_MESSAGE
+					@_handshake_state.ReadMessage(message)
+				if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_SPLIT
+					[@_send_cipher_state, @_receive_cipher_state] = @_handshake_state.Split()
+				else if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_FAILED
+					throw new Error('Noise handshake failed')
+		/**
+		 * @param {!Uint8Array} plaintext
+		 *
+		 * @return {!Uint8Array}
+		 *
+		 * @throws {Error}
+		 */
+		'encrypt' : (plaintext) ->
+			@_send_cipher_state.EncryptWithAd(new Uint8Array(0), plaintext)
+		/**
+		 * @param {!Uint8Array} ciphertext
+		 *
+		 * @return {!Uint8Array}
+		 *
+		 * @throws {Error}
+		 */
+		'decrypt' : (ciphertext) ->
+			@_receive_cipher_state.DecryptWithAd(new Uint8Array(0), ciphertext)
+	Object.defineProperty(Encryptor::, 'constructor', {enumerable: false, value: Encryptor})
 	{
 		'ready'					: Promise.all([supercop.ready, aez.ready, noise-c.ready]).then(->)
 		'create_keypairs'		: create_keypairs
 		'convert_public_key'	: convert_public_key
 		'Rewrapper'				: Rewrapper
+		'Encryptor'				: Encryptor
 	}
 
 if typeof define == 'function' && define.amd
