@@ -33,18 +33,39 @@
     }
     return results$;
   }
-  function Crypto(supercop, aez, noiseC){
+  function Crypto(supercop, ed2curve, aez, noiseC){
     /**
+     * @param {Uint8Array} seed Random seed will be generated if `null`
+     *
      * @return {!Object} Object with keys `public` and `private` that contain `Uint8Array` with public and private keys respectively
      */
-    var generate_keypair;
-    generate_keypair = function(){
+    var create_keypairs, convert_public_key;
+    create_keypairs = function(seed){
       var keys;
-      keys = supercop.createKeyPair(supercop.createSeed());
+      seed == null && (seed = null);
+      if (!seed) {
+        seed = supercop.createSeed();
+      }
+      keys = supercop.createKeyPair(seed);
       return {
-        'public': keys.publicKey,
-        'private': keys.secretKey
+        'seed': seed,
+        'ed25519': {
+          'public': keys.publicKey,
+          'private': keys.secretKey
+        },
+        'x25519': {
+          'public': ed2curve.convertPublicKey(keys.publicKey),
+          'private': ed2curve.convertSecretKey(keys.secretKey)
+        }
       };
+    };
+    /**
+     * @param {!Uint8Array} public_key Ed25519 public key
+     *
+     * @return {Uint8Array} X25519 public key (or `null` if `public_key` was invalid)
+     */
+    convert_public_key = function(public_key){
+      return ed2curve.convertPublicKey(keys.publicKey);
     };
     /**
      * @param {Uint8Array} key Empty when initialized by initiator and specified on responder side
@@ -94,15 +115,16 @@
     });
     return {
       'ready': Promise.all([supercop.ready, aez.ready, noiseC.ready]).then(function(){}),
-      'generate_keypair': generate_keypair,
+      'create_keypairs': create_keypairs,
+      'convert_public_key': convert_public_key,
       'Rewrapper': Rewrapper
     };
   }
   if (typeof define === 'function' && define.amd) {
-    define(['supercop.wasm', 'aez.wasm', 'noise-c.wasm'], Crypto);
+    define(['supercop.wasm', 'ed2curve-js', 'aez.wasm', 'noise-c.wasm'], Crypto);
   } else if (typeof exports === 'object') {
-    module.exports = Crypto(require('supercop.wasm'), require('aez.wasm'), require('noise-c.wasm'));
+    module.exports = Crypto(require('supercop.wasm'), require('ed2curve-js'), require('aez.wasm'), require('noise-c.wasm'));
   } else {
-    this['async_eventer'] = Crypto(this['supercop_wasm'], this['aez_wasm'], this['noise_c_wasm']);
+    this['async_eventer'] = Crypto(this['supercop_wasm'], this['ed2curve'], this['aez_wasm'], this['noise_c_wasm']);
   }
 }).call(this);

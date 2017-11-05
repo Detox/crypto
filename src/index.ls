@@ -24,16 +24,32 @@ function increment_nonce (nonce)
 			break
 
 
-function Crypto (supercop, aez, noise-c)
+function Crypto (supercop, ed2curve, aez, noise-c)
 	/**
+	 * @param {Uint8Array} seed Random seed will be generated if `null`
+	 *
 	 * @return {!Object} Object with keys `public` and `private` that contain `Uint8Array` with public and private keys respectively
 	 */
-	generate_keypair	= ->
-		keys	= supercop.createKeyPair(supercop.createSeed())
+	create_keypairs	= (seed = null) ->
+		if !seed
+			seed	= supercop.createSeed()
+		keys	= supercop.createKeyPair(seed)
 		{
-			'public'	: keys.publicKey
-			'private'	: keys.secretKey
+			'seed'		: seed
+			'ed25519'	:
+				'public'	: keys.publicKey
+				'private'	: keys.secretKey
+			'x25519'	:
+				'public'	: ed2curve.convertPublicKey(keys.publicKey)
+				'private'	: ed2curve.convertSecretKey(keys.secretKey)
 		}
+	/**
+	 * @param {!Uint8Array} public_key Ed25519 public key
+	 *
+	 * @return {Uint8Array} X25519 public key (or `null` if `public_key` was invalid)
+	 */
+	convert_public_key = (public_key) ->
+		ed2curve.convertPublicKey(keys.publicKey)
 	/**
 	 * @param {Uint8Array} key Empty when initialized by initiator and specified on responder side
 	 *
@@ -73,17 +89,19 @@ function Crypto (supercop, aez, noise-c)
 	Object.defineProperty(Rewrapper::, 'constructor', {enumerable: false, value: Rewrapper})
 	# TODO: end-to-end encryption
 	{
-		'ready'				: Promise.all([supercop.ready, aez.ready, noise-c.ready]).then(->)
-		'generate_keypair'	: generate_keypair
-		'Rewrapper'			: Rewrapper
+		'ready'					: Promise.all([supercop.ready, aez.ready, noise-c.ready]).then(->)
+		'create_keypairs'		: create_keypairs
+		'convert_public_key'	: convert_public_key
+		'Rewrapper'				: Rewrapper
 	}
 
 if typeof define == 'function' && define.amd
 	# AMD
-	define(['supercop.wasm', 'aez.wasm', 'noise-c.wasm'], Crypto)
+	# TODO: ed2curve-js doesn't actually work yet until https://github.com/dchest/ed2curve-js/issues/3 is resolved
+	define(['supercop.wasm', 'ed2curve-js', 'aez.wasm', 'noise-c.wasm'], Crypto)
 else if typeof exports == 'object'
 	# CommonJS
-	module.exports = Crypto(require('supercop.wasm'), require('aez.wasm'), require('noise-c.wasm'))
+	module.exports = Crypto(require('supercop.wasm'), require('ed2curve-js'), require('aez.wasm'), require('noise-c.wasm'))
 else
 	# Browser globals
-	@'async_eventer' = Crypto(@'supercop_wasm', @'aez_wasm', @'noise_c_wasm')
+	@'async_eventer' = Crypto(@'supercop_wasm', @'ed2curve', @'aez_wasm', @'noise_c_wasm')
