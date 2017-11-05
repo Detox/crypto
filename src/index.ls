@@ -112,18 +112,25 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 			@_handshake_state.Initialize(null, key)
 	Rewrapper::	=
 		/**
+		 * @return {boolean}
+		 */
+		'ready' : ->
+			!@_handshake_state
+		/**
 		 * @return {Uint8Array} Handshake message that should be sent to the other side or `null` otherwise
 		 *
 		 * @throws {Error}
 		 */
 		'get_handshake_message' : ->
 			message	= null
-			if !@_send_cipher_state
+			if @_handshake_state
 				if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_WRITE_MESSAGE
 					message	= @_handshake_state.WriteMessage()
 				if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_SPLIT
 					[@_send_cipher_state, @_receive_cipher_state] = @_handshake_state.Split()
+					delete @_handshake_state
 				else if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_FAILED
+					delete @_handshake_state
 					throw new Error('Noise handshake failed')
 			message
 		/**
@@ -132,12 +139,14 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 		 * @throws {Error}
 		 */
 		'put_handshake_message' : (message) !->
-			if !@_send_cipher_state
+			if @_handshake_state
 				if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_READ_MESSAGE
 					@_handshake_state.ReadMessage(message)
 				if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_SPLIT
 					[@_send_cipher_state, @_receive_cipher_state] = @_handshake_state.Split()
+					delete @_handshake_state
 				else if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_FAILED
+					delete @_handshake_state
 					throw new Error('Noise handshake failed')
 		/**
 		 * @param {!Uint8Array} plaintext

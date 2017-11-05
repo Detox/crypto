@@ -140,20 +140,28 @@
     }
     Rewrapper.prototype = {
       /**
+       * @return {boolean}
+       */
+      'ready': function(){
+        return !this._handshake_state;
+      }
+      /**
        * @return {Uint8Array} Handshake message that should be sent to the other side or `null` otherwise
        *
        * @throws {Error}
-       */
+       */,
       'get_handshake_message': function(){
         var message, ref$;
         message = null;
-        if (!this._send_cipher_state) {
+        if (this._handshake_state) {
           if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_WRITE_MESSAGE) {
             message = this._handshake_state.WriteMessage();
           }
           if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_SPLIT) {
             ref$ = this._handshake_state.Split(), this._send_cipher_state = ref$[0], this._receive_cipher_state = ref$[1];
+            delete this._handshake_state;
           } else if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_FAILED) {
+            delete this._handshake_state;
             throw new Error('Noise handshake failed');
           }
         }
@@ -166,13 +174,15 @@
        */,
       'put_handshake_message': function(message){
         var ref$;
-        if (!this._send_cipher_state) {
+        if (this._handshake_state) {
           if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_READ_MESSAGE) {
             this._handshake_state.ReadMessage(message);
           }
           if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_SPLIT) {
             ref$ = this._handshake_state.Split(), this._send_cipher_state = ref$[0], this._receive_cipher_state = ref$[1];
+            delete this._handshake_state;
           } else if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_FAILED) {
+            delete this._handshake_state;
             throw new Error('Noise handshake failed');
           }
         }
