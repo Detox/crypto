@@ -6,6 +6,33 @@
  * @license   MIT License, see license.txt
  */
 (function(){
+  var randombytes;
+  if (typeof exports === 'object') {
+    randombytes = require('crypto').randomBytes;
+  } else {
+    randombytes = function(size){
+      var array;
+      array = new Uint8Array(size);
+      crypto.getRandomValues(array);
+      return array;
+    };
+  }
+  /**
+   * Increment nonce from `nonce` argument in place
+   *
+   * @param {!Uint8Array} nonce
+   */
+  function increment_nonce(nonce){
+    var i$, index, results$ = [];
+    for (i$ = nonce.length - 1; i$ >= 0; --i$) {
+      index = i$;
+      ++nonce[index];
+      if (nonce[index] !== 0) {
+        break;
+      }
+    }
+    return results$;
+  }
   function Crypto(supercop, aez, noiseC){
     /**
      * @return {!Object} Object with keys `public` and `private` that contain `Uint8Array` with public and private keys respectively
@@ -19,9 +46,56 @@
         'private': keys.secretKey
       };
     };
+    /**
+     * @param {Uint8Array} key Empty when initialized by initiator and specified on responder side
+     *
+     * @return {Rewrapper}
+     */
+    function Rewrapper(key){
+      key == null && (key = null);
+      if (!(this instanceof Rewrapper)) {
+        return new Rewrapper(key);
+      }
+      if (key === null) {
+        key = randombytes(48);
+      }
+      this._key = key;
+      return this._nonce = new Uint8Array(12);
+    }
+    Rewrapper.prototype = {
+      /**
+       * @return {!Uint8Array}
+       */
+      'get_key': function(){
+        return this._key;
+      }
+      /**
+       * @param {!Uint8Array} plaintext
+       *
+       * @return {!Uint8Array} Ciphertext
+       */,
+      'wrap': function(data){
+        increment_nonce(this._nonce);
+        return aez.encrypt(plaintext, new Uint8Array, this._nonce, this._key, 0);
+      }
+      /**
+       * @param {!Uint8Array} ciphertext
+       *
+       * @return {!Uint8Array} Plaintext
+       */,
+      'unwrap': function(ciphertext){
+        increment_nonce(this._nonce);
+        return aez.decrypt(ciphertext, new Uint8Array, this._nonce, this._key, 0);
+      }
+    };
+    Object.defineProperty(Rewrapper.prototype, 'constructor', {
+      enumerable: false,
+      value: Rewrapper
+    });
     return {
-      'ready': Promise.all([supercop.ready]).then(function(){}),
-      'generate_keypair': generate_keypair
+      'ready': Promise.all([supercop.ready, aez.ready, noiseC.ready]).then(function(){}),
+      'generate_keypair': generate_keypair,
+      'Rewrapper': Rewrapper
     };
   }
   if (typeof define === 'function' && define.amd) {

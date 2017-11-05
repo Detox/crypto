@@ -30,6 +30,8 @@
 	},
 	"devDependencies" : {},
 	"dependencies"    : {
+		"aez.wasm"      : "^0.1.0",
+		"noise-c.wasm"  : "^0.1.0",
 		"supercop.wasm" : "^4.1.0"
 	}
 }
