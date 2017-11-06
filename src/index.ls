@@ -59,7 +59,7 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 	 *
 	 * @return {Rewrapper}
 	 */
-	function Rewrapper (key = null)
+	!function Rewrapper (key = null)
 		if !(@ instanceof Rewrapper)
 			return new Rewrapper(key)
 		if key == null
@@ -77,7 +77,7 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 		 *
 		 * @return {!Uint8Array} Ciphertext
 		 */
-		'wrap' : (data) ->
+		'wrap' : (plaintext) ->
 			increment_nonce(@_nonce)
 			# No need to catch exception since we will always have correct inputs
 			aez.encrypt(plaintext, new Uint8Array, @_nonce, @_key, 0)
@@ -101,7 +101,7 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 	 *
 	 * @throws {Error}
 	 */
-	function Encryptor (initiator, key)
+	!function Encryptor (initiator, key)
 		if !(@ instanceof Encryptor)
 			return new Encryptor(initiator, key)
 		if initiator
@@ -110,7 +110,7 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 		else
 			@_handshake_state	= noise-c.HandshakeState(NOISE_PROTOCOL_NAME, noise-c.constants.NOISE_ROLE_RESPONDER)
 			@_handshake_state.Initialize(null, key)
-	Rewrapper::	=
+	Encryptor::	=
 		/**
 		 * @return {boolean}
 		 */

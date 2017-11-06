@@ -84,7 +84,7 @@
         key = randombytes(48);
       }
       this._key = key;
-      return this._nonce = new Uint8Array(12);
+      this._nonce = new Uint8Array(12);
     }
     Rewrapper.prototype = {
       /**
@@ -98,7 +98,7 @@
        *
        * @return {!Uint8Array} Ciphertext
        */,
-      'wrap': function(data){
+      'wrap': function(plaintext){
         increment_nonce(this._nonce);
         return aez.encrypt(plaintext, new Uint8Array, this._nonce, this._key, 0);
       }
@@ -132,13 +132,13 @@
       }
       if (initiator) {
         this._handshake_state = noiseC.HandshakeState(NOISE_PROTOCOL_NAME, noiseC.constants.NOISE_ROLE_INITIATOR);
-        return this._handshake_state.Initialize(null, null, key);
+        this._handshake_state.Initialize(null, null, key);
       } else {
         this._handshake_state = noiseC.HandshakeState(NOISE_PROTOCOL_NAME, noiseC.constants.NOISE_ROLE_RESPONDER);
-        return this._handshake_state.Initialize(null, key);
+        this._handshake_state.Initialize(null, key);
       }
     }
-    Rewrapper.prototype = {
+    Encryptor.prototype = {
       /**
        * @return {boolean}
        */

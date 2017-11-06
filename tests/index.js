@@ -27,5 +27,25 @@
       t.equal(keypair.x25519['private'].join(','), x25519_private.join(','), 'Generated correct x25519 private key');
       t.equal(lib.convert_public_key(keypair.ed25519['public']).join(','), x25519_public.join(','), 'Ed25519 public key converted to X25519 correctly');
     });
+    test('Rewrapping', function(t){
+      var instance, key, plaintext, known_ciphertext, wrapper, unwrapper, ciphertext, plaintext_decrypted;
+      t.plan(7);
+      debugger;
+      instance = lib.Rewrapper();
+      t.ok(instance._key instanceof Uint8Array, 'Key was generated automatically');
+      t.equal(instance._key.length, 48, 'Key has correct length');
+      key = Buffer.from('4f99a089d76256347358580797cf4242bd3afc1b3e62f39a76ca066b64fae8346a9dbfc9e8e1c59506ee919954324f58', 'hex');
+      plaintext = 'Hello, Detox!';
+      known_ciphertext = Buffer.from('b6a8f817b079a5af10c3434a1d', 'hex');
+      wrapper = lib.Rewrapper(key);
+      unwrapper = lib.Rewrapper(key);
+      t.equal(wrapper._nonce.join(','), new Uint8Array(12).join(','), 'Nonce defaults to zeroes');
+      ciphertext = wrapper.wrap(Buffer.from(plaintext));
+      t.equal(wrapper._nonce[wrapper._nonce.length - 1], 1, 'Nonce was incremented');
+      t.equal(ciphertext.join(','), known_ciphertext.join(','), 'Wrapped correctly');
+      plaintext_decrypted = unwrapper.unwrap(ciphertext);
+      t.equal(wrapper._nonce[wrapper._nonce.length - 1], 1, 'Nonce was incremented');
+      t.equal(Buffer.from(plaintext_decrypted).toString(), plaintext, 'Unwrapped correctly');
+    });
   });
 }).call(this);
