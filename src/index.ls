@@ -51,7 +51,7 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 	 * @return {Uint8Array} X25519 public key (or `null` if `public_key` was invalid)
 	 */
 	convert_public_key = (public_key) ->
-		ed2curve.convertPublicKey(keys.publicKey)
+		ed2curve.convertPublicKey(public_key)
 	/**
 	 * @constructor
 	 *
@@ -168,7 +168,8 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 			@_receive_cipher_state.DecryptWithAd(new Uint8Array(0), ciphertext)
 	Object.defineProperty(Encryptor::, 'constructor', {enumerable: false, value: Encryptor})
 	{
-		'ready'					: Promise.all([supercop.ready, aez.ready, noise-c.ready]).then(->)
+		'ready'					: (callback) !->
+			Promise.all([supercop.ready, aez.ready, noise-c.ready]).then().then(callback)
 		'create_keypair'		: create_keypair
 		'convert_public_key'	: convert_public_key
 		'Rewrapper'				: Rewrapper
@@ -177,11 +178,11 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 
 if typeof define == 'function' && define.amd
 	# AMD
-	# TODO: ed2curve-js doesn't actually work yet until https://github.com/dchest/ed2curve-js/issues/3 is resolved
-	define(['supercop.wasm', 'ed2curve-js', 'aez.wasm', 'noise-c.wasm'], Crypto)
+	# TODO: ed2curve doesn't actually work yet until https://github.com/dchest/ed2curve-js/issues/3 is resolved
+	define(['supercop.wasm', 'ed2curve', 'aez.wasm', 'noise-c.wasm'], Crypto)
 else if typeof exports == 'object'
 	# CommonJS
-	module.exports = Crypto(require('supercop.wasm'), require('ed2curve-js'), require('aez.wasm'), require('noise-c.wasm'))
+	module.exports = Crypto(require('supercop.wasm'), require('ed2curve'), require('aez.wasm'), require('noise-c.wasm'))
 else
 	# Browser globals
 	@'async_eventer' = Crypto(@'supercop_wasm', @'ed2curve', @'aez_wasm', @'noise_c_wasm')

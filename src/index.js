@@ -66,7 +66,7 @@
      * @return {Uint8Array} X25519 public key (or `null` if `public_key` was invalid)
      */
     convert_public_key = function(public_key){
-      return ed2curve.convertPublicKey(keys.publicKey);
+      return ed2curve.convertPublicKey(public_key);
     };
     /**
      * @constructor
@@ -213,7 +213,9 @@
       value: Encryptor
     });
     return {
-      'ready': Promise.all([supercop.ready, aez.ready, noiseC.ready]).then(function(){}),
+      'ready': function(callback){
+        Promise.all([supercop.ready, aez.ready, noiseC.ready]).then().then(callback);
+      },
       'create_keypair': create_keypair,
       'convert_public_key': convert_public_key,
       'Rewrapper': Rewrapper,
@@ -221,9 +223,9 @@
     };
   }
   if (typeof define === 'function' && define.amd) {
-    define(['supercop.wasm', 'ed2curve-js', 'aez.wasm', 'noise-c.wasm'], Crypto);
+    define(['supercop.wasm', 'ed2curve', 'aez.wasm', 'noise-c.wasm'], Crypto);
   } else if (typeof exports === 'object') {
-    module.exports = Crypto(require('supercop.wasm'), require('ed2curve-js'), require('aez.wasm'), require('noise-c.wasm'));
+    module.exports = Crypto(require('supercop.wasm'), require('ed2curve'), require('aez.wasm'), require('noise-c.wasm'));
   } else {
     this['async_eventer'] = Crypto(this['supercop_wasm'], this['ed2curve'], this['aez_wasm'], this['noise_c_wasm']);
   }
