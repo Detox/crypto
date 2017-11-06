@@ -40,8 +40,8 @@
      *
      * @return {!Object} Object with keys `public` and `private` that contain `Uint8Array` with public and private keys respectively
      */
-    var create_keypairs, convert_public_key;
-    create_keypairs = function(seed){
+    var create_keypair, convert_public_key;
+    create_keypair = function(seed){
       var keys;
       seed == null && (seed = null);
       if (!seed) {
@@ -214,7 +214,7 @@
     });
     return {
       'ready': Promise.all([supercop.ready, aez.ready, noiseC.ready]).then(function(){}),
-      'create_keypairs': create_keypairs,
+      'create_keypair': create_keypair,
       'convert_public_key': convert_public_key,
       'Rewrapper': Rewrapper,
       'Encryptor': Encryptor

@@ -32,7 +32,7 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 	 *
 	 * @return {!Object} Object with keys `public` and `private` that contain `Uint8Array` with public and private keys respectively
 	 */
-	create_keypairs	= (seed = null) ->
+	create_keypair	= (seed = null) ->
 		if !seed
 			seed	= supercop.createSeed()
 		keys	= supercop.createKeyPair(seed)
@@ -169,7 +169,7 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 	Object.defineProperty(Encryptor::, 'constructor', {enumerable: false, value: Encryptor})
 	{
 		'ready'					: Promise.all([supercop.ready, aez.ready, noise-c.ready]).then(->)
-		'create_keypairs'		: create_keypairs
+		'create_keypair'		: create_keypair
 		'convert_public_key'	: convert_public_key
 		'Rewrapper'				: Rewrapper
 		'Encryptor'				: Encryptor
