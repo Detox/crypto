@@ -12,7 +12,7 @@ else
 		crypto.getRandomValues(array)
 		array
 
-const NOISE_PROTOCOL_NAME = 'Noise_IK_25519_ChaChaPoly_BLAKE2b'
+const NOISE_PROTOCOL_NAME = 'Noise_NK_25519_ChaChaPoly_BLAKE2b'
 
 /**
  * Increment nonce from `nonce` argument in place
