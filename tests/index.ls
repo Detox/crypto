@@ -5,7 +5,6 @@
  * @license   MIT License, see license.txt
  */
 lib			= require('..')
-randombytes	= require('crypto').randomBytes
 test		= require('tape')
 
 seed			= Buffer.from('9fc9b77445f8b077c29fe27fc581c52beb668ecd25f5bb2ba5777dee2a411e97', 'hex')
@@ -56,7 +55,7 @@ test('Rewrapping', (t) !->
 )
 
 test('Encryption', (t) !->
-	t.plan(7)
+	t.plan(4)
 
 	initiator	= lib.Encryptor(true, x25519_public)
 	responder	= lib.Encryptor(false, x25519_private)

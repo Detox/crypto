@@ -26,7 +26,7 @@ function increment_nonce (nonce)
 			break
 
 
-function Crypto (supercop, ed2curve, aez, noise-c)
+function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 	/**
 	 * @param {Uint8Array} seed Random seed will be generated if `null`
 	 *
@@ -42,8 +42,8 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 				'public'	: keys.publicKey
 				'private'	: keys.secretKey
 			'x25519'	:
-				'public'	: ed2curve.convertPublicKey(keys.publicKey)
-				'private'	: ed2curve.convertSecretKey(keys.secretKey)
+				'public'	: ed25519-to-x25519.convert_public_key(keys.publicKey)
+				'private'	: ed25519-to-x25519.convert_private_key(keys.secretKey)
 		}
 	/**
 	 * @param {!Uint8Array} public_key Ed25519 public key
@@ -51,7 +51,7 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 	 * @return {Uint8Array} X25519 public key (or `null` if `public_key` was invalid)
 	 */
 	convert_public_key = (public_key) ->
-		ed2curve.convertPublicKey(public_key)
+		ed25519-to-x25519.convert_public_key(public_key)
 	/**
 	 * @constructor
 	 *
@@ -169,7 +169,7 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 	Object.defineProperty(Encryptor::, 'constructor', {enumerable: false, value: Encryptor})
 	{
 		'ready'					: (callback) !->
-			Promise.all([supercop.ready, aez.ready, noise-c.ready]).then().then(callback)
+			Promise.all([supercop.ready, ed25519-to-x25519.ready, aez.ready, noise-c.ready]).then().then(callback)
 		'create_keypair'		: create_keypair
 		'convert_public_key'	: convert_public_key
 		'Rewrapper'				: Rewrapper
@@ -178,11 +178,10 @@ function Crypto (supercop, ed2curve, aez, noise-c)
 
 if typeof define == 'function' && define.amd
 	# AMD
-	# TODO: ed2curve doesn't actually work yet until https://github.com/dchest/ed2curve-js/issues/3 is resolved
-	define(['supercop.wasm', 'ed2curve', 'aez.wasm', 'noise-c.wasm'], Crypto)
+	define(['supercop.wasm', 'ed25519-to-x25519.wasm', 'aez.wasm', 'noise-c.wasm'], Crypto)
 else if typeof exports == 'object'
 	# CommonJS
-	module.exports = Crypto(require('supercop.wasm'), require('ed2curve'), require('aez.wasm'), require('noise-c.wasm'))
+	module.exports = Crypto(require('supercop.wasm'), require('ed25519-to-x25519.wasm'), require('aez.wasm'), require('noise-c.wasm'))
 else
 	# Browser globals
-	@'async_eventer' = Crypto(@'supercop_wasm', @'ed2curve', @'aez_wasm', @'noise_c_wasm')
+	@'async_eventer' = Crypto(@'supercop_wasm', @'ed25519_to_x25519_wasm', @'aez_wasm', @'noise_c_wasm')

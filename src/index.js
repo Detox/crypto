@@ -34,7 +34,7 @@
     }
     return results$;
   }
-  function Crypto(supercop, ed2curve, aez, noiseC){
+  function Crypto(supercop, ed25519ToX25519, aez, noiseC){
     /**
      * @param {Uint8Array} seed Random seed will be generated if `null`
      *
@@ -55,8 +55,8 @@
           'private': keys.secretKey
         },
         'x25519': {
-          'public': ed2curve.convertPublicKey(keys.publicKey),
-          'private': ed2curve.convertSecretKey(keys.secretKey)
+          'public': ed25519ToX25519.convert_public_key(keys.publicKey),
+          'private': ed25519ToX25519.convert_private_key(keys.secretKey)
         }
       };
     };
@@ -66,7 +66,7 @@
      * @return {Uint8Array} X25519 public key (or `null` if `public_key` was invalid)
      */
     convert_public_key = function(public_key){
-      return ed2curve.convertPublicKey(public_key);
+      return ed25519ToX25519.convert_public_key(public_key);
     };
     /**
      * @constructor
@@ -214,7 +214,7 @@
     });
     return {
       'ready': function(callback){
-        Promise.all([supercop.ready, aez.ready, noiseC.ready]).then().then(callback);
+        Promise.all([supercop.ready, ed25519ToX25519.ready, aez.ready, noiseC.ready]).then().then(callback);
       },
       'create_keypair': create_keypair,
       'convert_public_key': convert_public_key,
@@ -223,10 +223,10 @@
     };
   }
   if (typeof define === 'function' && define.amd) {
-    define(['supercop.wasm', 'ed2curve', 'aez.wasm', 'noise-c.wasm'], Crypto);
+    define(['supercop.wasm', 'ed25519-to-x25519.wasm', 'aez.wasm', 'noise-c.wasm'], Crypto);
   } else if (typeof exports === 'object') {
-    module.exports = Crypto(require('supercop.wasm'), require('ed2curve'), require('aez.wasm'), require('noise-c.wasm'));
+    module.exports = Crypto(require('supercop.wasm'), require('ed25519-to-x25519.wasm'), require('aez.wasm'), require('noise-c.wasm'));
   } else {
-    this['async_eventer'] = Crypto(this['supercop_wasm'], this['ed2curve'], this['aez_wasm'], this['noise_c_wasm']);
+    this['async_eventer'] = Crypto(this['supercop_wasm'], this['ed25519_to_x25519_wasm'], this['aez_wasm'], this['noise_c_wasm']);
   }
 }).call(this);

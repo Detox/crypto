@@ -6,9 +6,8 @@
  * @license   MIT License, see license.txt
  */
 (function(){
-  var lib, randombytes, test, seed, ed25519_public, ed25519_private, x25519_public, x25519_private, key, plaintext, known_ciphertext;
+  var lib, test, seed, ed25519_public, ed25519_private, x25519_public, x25519_private, key, plaintext, known_ciphertext;
   lib = require('..');
-  randombytes = require('crypto').randomBytes;
   test = require('tape');
   seed = Buffer.from('9fc9b77445f8b077c29fe27fc581c52beb668ecd25f5bb2ba5777dee2a411e97', 'hex');
   ed25519_public = Buffer.from('8fbe438aab6c40dc2ebc839ba27530ca1bf23d4efd36958a3365406efe52ccd1', 'hex');
@@ -48,7 +47,7 @@
     });
     test('Encryption', function(t){
       var initiator, responder, message, ciphertext, plaintext_decrypted;
-      t.plan(7);
+      t.plan(4);
       initiator = lib.Encryptor(true, x25519_public);
       responder = lib.Encryptor(false, x25519_private);
       message = initiator.get_handshake_message();

@@ -26,13 +26,13 @@
 		"src"
 	],
 	"scripts"         : {
-		"test" : "tape test/**/*.js"
+		"test" : "tape tests/**/*.js"
 	},
 	"dependencies"    : {
-		"aez.wasm"      : "^0.1.0",
-		"ed2curve"      : "^0.2.1",
-		"noise-c.wasm"  : "^0.1.1",
-		"supercop.wasm" : "^4.1.0"
+		"aez.wasm"               : "^0.1.0",
+		"ed25519-to-x25519.wasm" : "^0.1.0",
+		"noise-c.wasm"           : "^0.1.1",
+		"supercop.wasm"          : "^4.1.0"
 	},
 	"devDependencies" : {
 		"tape" : "^4.8.0"
