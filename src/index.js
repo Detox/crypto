@@ -38,7 +38,7 @@
     /**
      * @param {Uint8Array} seed Random seed will be generated if `null`
      *
-     * @return {!Object} Object with keys `public` and `private` that contain `Uint8Array` with public and private keys respectively
+     * @return {!Object}
      */
     var create_keypair, convert_public_key;
     create_keypair = function(seed){
@@ -56,7 +56,7 @@
         },
         'x25519': {
           'public': ed25519ToX25519.convert_public_key(keys.publicKey),
-          'private': ed25519ToX25519.convert_private_key(keys.secretKey)
+          'private': ed25519ToX25519.convert_private_key(seed)
         }
       };
     };

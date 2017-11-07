@@ -30,12 +30,13 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 	/**
 	 * @param {Uint8Array} seed Random seed will be generated if `null`
 	 *
-	 * @return {!Object} Object with keys `public` and `private` that contain `Uint8Array` with public and private keys respectively
+	 * @return {!Object}
 	 */
 	create_keypair	= (seed = null) ->
 		if !seed
 			seed	= supercop.createSeed()
 		keys	= supercop.createKeyPair(seed)
+		# Note: In ed25519 private key is already hashed, while in x25519 we use seed as it is done in libsodium and other libraries (see https://github.com/orlp/ed25519/issues/10)
 		{
 			'seed'		: seed
 			'ed25519'	:
@@ -43,7 +44,7 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 				'private'	: keys.secretKey
 			'x25519'	:
 				'public'	: ed25519-to-x25519.convert_public_key(keys.publicKey)
-				'private'	: ed25519-to-x25519.convert_private_key(keys.secretKey)
+				'private'	: ed25519-to-x25519.convert_private_key(seed)
 		}
 	/**
 	 * @param {!Uint8Array} public_key Ed25519 public key

@@ -13,7 +13,7 @@
   ed25519_public = Buffer.from('8fbe438aab6c40dc2ebc839ba27530ca1bf23d4efd36958a3365406efe52ccd1', 'hex');
   ed25519_private = Buffer.from('28e9e1d48cb0e52e437080e4a180058d7a42a07abcd05ea2ec4e6122cded8f6a0d2a6b9fd1878fd76ab20caecab666916ac3cc772fc57f8fa6e8dc3227bb8497', 'hex');
   x25519_public = Buffer.from('26100e941bdd2103038d8dec9a1884694736f591ee814e66ae6e2e2284757136', 'hex');
-  x25519_private = Buffer.from('803fcdab44e9958d2f8e4d47b5f0d481d6ddb79dd462a18ee65cabe94a9e455c', 'hex');
+  x25519_private = Buffer.from('28e9e1d48cb0e52e437080e4a180058d7a42a07abcd05ea2ec4e6122cded8f6a', 'hex');
   key = Buffer.from('4f99a089d76256347358580797cf4242bd3afc1b3e62f39a76ca066b64fae8346a9dbfc9e8e1c59506ee919954324f58', 'hex');
   plaintext = 'Hello, Detox!';
   known_ciphertext = Buffer.from('b6a8f817b079a5af10c3434a1d', 'hex');
