@@ -33,8 +33,8 @@
       var instance, wrapper, unwrapper, ciphertext, plaintext_decrypted;
       t.plan(7);
       instance = lib.Rewrapper();
-      t.ok(instance._key instanceof Uint8Array, 'Key was generated automatically');
-      t.equal(instance._key.length, 48, 'Key has correct length');
+      t.ok(instance.get_key() instanceof Uint8Array, 'Key was generated automatically');
+      t.equal(instance.get_key().length, 48, 'Key has correct length');
       wrapper = lib.Rewrapper(key);
       unwrapper = lib.Rewrapper(key);
       t.equal(wrapper._nonce.join(','), new Uint8Array(12).join(','), 'Nonce defaults to zeroes');

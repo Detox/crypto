@@ -40,34 +40,33 @@
      *
      * @return {!Object}
      */
-    var create_keypair, convert_public_key;
-    create_keypair = function(seed){
+    function create_keypair(seed){
       var keys;
       seed == null && (seed = null);
       if (!seed) {
-        seed = supercop.createSeed();
+        seed = supercop['createSeed']();
       }
-      keys = supercop.createKeyPair(seed);
+      keys = supercop['createKeyPair'](seed);
       return {
         'seed': seed,
         'ed25519': {
-          'public': keys.publicKey,
-          'private': keys.secretKey
+          'public': keys['publicKey'],
+          'private': keys['secretKey']
         },
         'x25519': {
-          'public': ed25519ToX25519.convert_public_key(keys.publicKey),
-          'private': ed25519ToX25519.convert_private_key(seed)
+          'public': ed25519ToX25519['convert_public_key'](keys['publicKey']),
+          'private': ed25519ToX25519['convert_private_key'](seed)
         }
       };
-    };
+    }
     /**
      * @param {!Uint8Array} public_key Ed25519 public key
      *
      * @return {Uint8Array} X25519 public key (or `null` if `public_key` was invalid)
      */
-    convert_public_key = function(public_key){
-      return ed25519ToX25519.convert_public_key(public_key);
-    };
+    function convert_public_key(public_key){
+      return ed25519ToX25519['convert_public_key'](public_key);
+    }
     /**
      * @constructor
      *
@@ -100,7 +99,7 @@
        */,
       'wrap': function(plaintext){
         increment_nonce(this._nonce);
-        return aez.encrypt(plaintext, new Uint8Array, this._nonce, this._key, 0);
+        return aez['encrypt'](plaintext, new Uint8Array(0), this._nonce, this._key, 0);
       }
       /**
        * @param {!Uint8Array} ciphertext
@@ -109,7 +108,7 @@
        */,
       'unwrap': function(ciphertext){
         increment_nonce(this._nonce);
-        return aez.decrypt(ciphertext, new Uint8Array, this._nonce, this._key, 0);
+        return aez['decrypt'](ciphertext, new Uint8Array(0), this._nonce, this._key, 0);
       }
     };
     Object.defineProperty(Rewrapper.prototype, 'constructor', {
@@ -131,11 +130,11 @@
         return new Encryptor(initiator, key);
       }
       if (initiator) {
-        this._handshake_state = noiseC.HandshakeState(NOISE_PROTOCOL_NAME, noiseC.constants.NOISE_ROLE_INITIATOR);
-        this._handshake_state.Initialize(null, null, key);
+        this._handshake_state = noiseC['HandshakeState'](NOISE_PROTOCOL_NAME, noiseC['constants']['NOISE_ROLE_INITIATOR']);
+        this._handshake_state['Initialize'](null, null, key);
       } else {
-        this._handshake_state = noiseC.HandshakeState(NOISE_PROTOCOL_NAME, noiseC.constants.NOISE_ROLE_RESPONDER);
-        this._handshake_state.Initialize(null, key);
+        this._handshake_state = noiseC['HandshakeState'](NOISE_PROTOCOL_NAME, noiseC['constants']['NOISE_ROLE_RESPONDER']);
+        this._handshake_state['Initialize'](null, key);
       }
     }
     Encryptor.prototype = {
@@ -151,21 +150,25 @@
        * @throws {Error}
        */,
       'get_handshake_message': function(){
-        var message, ref$;
+        var message;
         message = null;
         if (this._handshake_state) {
-          if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_WRITE_MESSAGE) {
-            message = this._handshake_state.WriteMessage();
+          if (this._handshake_state['GetAction']() === noiseC['constants']['NOISE_ACTION_WRITE_MESSAGE']) {
+            message = this._handshake_state['WriteMessage']();
           }
-          if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_SPLIT) {
-            ref$ = this._handshake_state.Split(), this._send_cipher_state = ref$[0], this._receive_cipher_state = ref$[1];
-            delete this._handshake_state;
-          } else if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_FAILED) {
-            delete this._handshake_state;
-            throw new Error('Noise handshake failed');
-          }
+          this._handshake_common();
         }
         return message;
+      },
+      _handshake_common: function(){
+        var ref$;
+        if (this._handshake_state['GetAction']() === noiseC['constants']['NOISE_ACTION_SPLIT']) {
+          ref$ = this._handshake_state['Split'](), this._send_cipher_state = ref$[0], this._receive_cipher_state = ref$[1];
+          delete this._handshake_state;
+        } else if (this._handshake_state['GetAction']() === noiseC['constants']['NOISE_ACTION_FAILED']) {
+          delete this._handshake_state;
+          throw new Error('Noise handshake failed');
+        }
       }
       /**
        * @param {!Uint8Array} message Handshake message received from the other side
@@ -173,18 +176,11 @@
        * @throws {Error}
        */,
       'put_handshake_message': function(message){
-        var ref$;
         if (this._handshake_state) {
-          if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_READ_MESSAGE) {
-            this._handshake_state.ReadMessage(message);
+          if (this._handshake_state['GetAction']() === noiseC['constants']['NOISE_ACTION_READ_MESSAGE']) {
+            this._handshake_state['ReadMessage'](message);
           }
-          if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_SPLIT) {
-            ref$ = this._handshake_state.Split(), this._send_cipher_state = ref$[0], this._receive_cipher_state = ref$[1];
-            delete this._handshake_state;
-          } else if (this._handshake_state.GetAction() === noiseC.constants.NOISE_ACTION_FAILED) {
-            delete this._handshake_state;
-            throw new Error('Noise handshake failed');
-          }
+          this._handshake_common();
         }
       }
       /**
@@ -195,7 +191,7 @@
        * @throws {Error}
        */,
       'encrypt': function(plaintext){
-        return this._send_cipher_state.EncryptWithAd(new Uint8Array(0), plaintext);
+        return this._send_cipher_state['EncryptWithAd'](new Uint8Array(0), plaintext);
       }
       /**
        * @param {!Uint8Array} ciphertext
@@ -205,7 +201,7 @@
        * @throws {Error}
        */,
       'decrypt': function(ciphertext){
-        return this._receive_cipher_state.DecryptWithAd(new Uint8Array(0), ciphertext);
+        return this._receive_cipher_state['DecryptWithAd'](new Uint8Array(0), ciphertext);
       }
     };
     Object.defineProperty(Encryptor.prototype, 'constructor', {
@@ -214,7 +210,7 @@
     });
     return {
       'ready': function(callback){
-        Promise.all([supercop.ready, ed25519ToX25519.ready, aez.ready, noiseC.ready]).then().then(callback);
+        Promise.all([supercop['ready'], ed25519ToX25519['ready'], aez['ready'], noiseC['ready']]).then().then(callback);
       },
       'create_keypair': create_keypair,
       'convert_public_key': convert_public_key,

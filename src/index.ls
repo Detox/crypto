@@ -32,27 +32,27 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 	 *
 	 * @return {!Object}
 	 */
-	create_keypair	= (seed = null) ->
+	function create_keypair (seed = null)
 		if !seed
-			seed	= supercop.createSeed()
-		keys	= supercop.createKeyPair(seed)
+			seed	= supercop['createSeed']()
+		keys	= supercop['createKeyPair'](seed)
 		# Note: In ed25519 private key is already hashed, while in x25519 we use seed as it is done in libsodium and other libraries (see https://github.com/orlp/ed25519/issues/10)
 		{
 			'seed'		: seed
 			'ed25519'	:
-				'public'	: keys.publicKey
-				'private'	: keys.secretKey
+				'public'	: keys['publicKey']
+				'private'	: keys['secretKey']
 			'x25519'	:
-				'public'	: ed25519-to-x25519.convert_public_key(keys.publicKey)
-				'private'	: ed25519-to-x25519.convert_private_key(seed)
+				'public'	: ed25519-to-x25519['convert_public_key'](keys['publicKey'])
+				'private'	: ed25519-to-x25519['convert_private_key'](seed)
 		}
 	/**
 	 * @param {!Uint8Array} public_key Ed25519 public key
 	 *
 	 * @return {Uint8Array} X25519 public key (or `null` if `public_key` was invalid)
 	 */
-	convert_public_key = (public_key) ->
-		ed25519-to-x25519.convert_public_key(public_key)
+	function convert_public_key (public_key)
+		ed25519-to-x25519['convert_public_key'](public_key)
 	/**
 	 * @constructor
 	 *
@@ -81,7 +81,7 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 		'wrap' : (plaintext) ->
 			increment_nonce(@_nonce)
 			# No need to catch exception since we will always have correct inputs
-			aez.encrypt(plaintext, new Uint8Array, @_nonce, @_key, 0)
+			aez['encrypt'](plaintext, new Uint8Array(0), @_nonce, @_key, 0)
 		/**
 		 * @param {!Uint8Array} ciphertext
 		 *
@@ -90,7 +90,7 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 		'unwrap' : (ciphertext) ->
 			increment_nonce(@_nonce)
 			# No need to catch exception since we don't have ciphertext expansion
-			aez.decrypt(ciphertext, new Uint8Array, @_nonce, @_key, 0)
+			aez['decrypt'](ciphertext, new Uint8Array(0), @_nonce, @_key, 0)
 	Object.defineProperty(Rewrapper::, 'constructor', {enumerable: false, value: Rewrapper})
 	/**
 	 * @constructor
@@ -106,11 +106,11 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 		if !(@ instanceof Encryptor)
 			return new Encryptor(initiator, key)
 		if initiator
-			@_handshake_state	= noise-c.HandshakeState(NOISE_PROTOCOL_NAME, noise-c.constants.NOISE_ROLE_INITIATOR)
-			@_handshake_state.Initialize(null, null, key)
+			@_handshake_state	= noise-c['HandshakeState'](NOISE_PROTOCOL_NAME, noise-c['constants']['NOISE_ROLE_INITIATOR'])
+			@_handshake_state['Initialize'](null, null, key)
 		else
-			@_handshake_state	= noise-c.HandshakeState(NOISE_PROTOCOL_NAME, noise-c.constants.NOISE_ROLE_RESPONDER)
-			@_handshake_state.Initialize(null, key)
+			@_handshake_state	= noise-c['HandshakeState'](NOISE_PROTOCOL_NAME, noise-c['constants']['NOISE_ROLE_RESPONDER'])
+			@_handshake_state['Initialize'](null, key)
 	Encryptor::	=
 		/**
 		 * @return {boolean}
@@ -125,15 +125,17 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 		'get_handshake_message' : ->
 			message	= null
 			if @_handshake_state
-				if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_WRITE_MESSAGE
-					message	= @_handshake_state.WriteMessage()
-				if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_SPLIT
-					[@_send_cipher_state, @_receive_cipher_state] = @_handshake_state.Split()
-					delete @_handshake_state
-				else if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_FAILED
-					delete @_handshake_state
-					throw new Error('Noise handshake failed')
+				if @_handshake_state['GetAction']() == noise-c['constants']['NOISE_ACTION_WRITE_MESSAGE']
+					message	= @_handshake_state['WriteMessage']()
+				@_handshake_common()
 			message
+		_handshake_common : !->
+			if @_handshake_state['GetAction']() == noise-c['constants']['NOISE_ACTION_SPLIT']
+				[@_send_cipher_state, @_receive_cipher_state] = @_handshake_state['Split']()
+				delete @_handshake_state
+			else if @_handshake_state['GetAction']() == noise-c['constants']['NOISE_ACTION_FAILED']
+				delete @_handshake_state
+				throw new Error('Noise handshake failed')
 		/**
 		 * @param {!Uint8Array} message Handshake message received from the other side
 		 *
@@ -141,14 +143,9 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 		 */
 		'put_handshake_message' : (message) !->
 			if @_handshake_state
-				if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_READ_MESSAGE
-					@_handshake_state.ReadMessage(message)
-				if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_SPLIT
-					[@_send_cipher_state, @_receive_cipher_state] = @_handshake_state.Split()
-					delete @_handshake_state
-				else if @_handshake_state.GetAction() == noise-c.constants.NOISE_ACTION_FAILED
-					delete @_handshake_state
-					throw new Error('Noise handshake failed')
+				if @_handshake_state['GetAction']() == noise-c['constants']['NOISE_ACTION_READ_MESSAGE']
+					@_handshake_state['ReadMessage'](message)
+				@_handshake_common()
 		/**
 		 * @param {!Uint8Array} plaintext
 		 *
@@ -157,7 +154,7 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 		 * @throws {Error}
 		 */
 		'encrypt' : (plaintext) ->
-			@_send_cipher_state.EncryptWithAd(new Uint8Array(0), plaintext)
+			@_send_cipher_state['EncryptWithAd'](new Uint8Array(0), plaintext)
 		/**
 		 * @param {!Uint8Array} ciphertext
 		 *
@@ -166,11 +163,11 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 		 * @throws {Error}
 		 */
 		'decrypt' : (ciphertext) ->
-			@_receive_cipher_state.DecryptWithAd(new Uint8Array(0), ciphertext)
+			@_receive_cipher_state['DecryptWithAd'](new Uint8Array(0), ciphertext)
 	Object.defineProperty(Encryptor::, 'constructor', {enumerable: false, value: Encryptor})
 	{
 		'ready'					: (callback) !->
-			Promise.all([supercop.ready, ed25519-to-x25519.ready, aez.ready, noise-c.ready]).then().then(callback)
+			Promise.all([supercop['ready'], ed25519-to-x25519['ready'], aez['ready'], noise-c['ready']]).then().then(callback)
 		'create_keypair'		: create_keypair
 		'convert_public_key'	: convert_public_key
 		'Rewrapper'				: Rewrapper
