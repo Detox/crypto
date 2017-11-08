@@ -210,7 +210,19 @@
     });
     return {
       'ready': function(callback){
-        Promise.all([supercop['ready'], ed25519ToX25519['ready'], aez['ready'], noiseC['ready']]).then().then(callback);
+        Promise.all([
+          new Promise(function(resolve){
+            supercop['ready'](resolve);
+          }), new Promise(function(resolve){
+            ed25519ToX25519['ready'](resolve);
+          }), new Promise(function(resolve){
+            aez['ready'](resolve);
+          }), new Promise(function(resolve){
+            noiseC['ready'](resolve);
+          })
+        ]).then(function(){
+          callback();
+        });
       },
       'create_keypair': create_keypair,
       'convert_public_key': convert_public_key,

@@ -167,7 +167,17 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 	Object.defineProperty(Encryptor::, 'constructor', {enumerable: false, value: Encryptor})
 	{
 		'ready'					: (callback) !->
-			Promise.all([supercop['ready'], ed25519-to-x25519['ready'], aez['ready'], noise-c['ready']]).then().then(callback)
+			Promise.all([
+				new Promise (resolve) !->
+					supercop['ready'](resolve)
+				new Promise (resolve) !->
+					ed25519-to-x25519['ready'](resolve)
+				new Promise (resolve) !->
+					aez['ready'](resolve)
+				new Promise (resolve) !->
+					noise-c['ready'](resolve)
+			]).then !->
+				callback()
 		'create_keypair'		: create_keypair
 		'convert_public_key'	: convert_public_key
 		'Rewrapper'				: Rewrapper
