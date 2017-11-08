@@ -184,7 +184,7 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 		'Encryptor'				: Encryptor
 	}
 
-if typeof define == 'function' && define.amd
+if typeof define == 'function' && define['amd']
 	# AMD
 	define(['supercop.wasm', 'ed25519-to-x25519.wasm', 'aez.wasm', 'noise-c.wasm'], Crypto)
 else if typeof exports == 'object'

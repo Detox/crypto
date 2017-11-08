@@ -230,7 +230,7 @@
       'Encryptor': Encryptor
     };
   }
-  if (typeof define === 'function' && define.amd) {
+  if (typeof define === 'function' && define['amd']) {
     define(['supercop.wasm', 'ed25519-to-x25519.wasm', 'aez.wasm', 'noise-c.wasm'], Crypto);
   } else if (typeof exports === 'object') {
     module.exports = Crypto(require('supercop.wasm'), require('ed25519-to-x25519.wasm'), require('aez.wasm'), require('noise-c.wasm'));
