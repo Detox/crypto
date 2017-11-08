@@ -223,6 +223,6 @@
   } else if (typeof exports === 'object') {
     module.exports = Crypto(require('supercop.wasm'), require('ed25519-to-x25519.wasm'), require('aez.wasm'), require('noise-c.wasm'));
   } else {
-    this['async_eventer'] = Crypto(this['supercop_wasm'], this['ed25519_to_x25519_wasm'], this['aez_wasm'], this['noise_c_wasm']);
+    this['detox_crypto'] = Crypto(this['supercop_wasm'], this['ed25519_to_x25519_wasm'], this['aez_wasm'], this['noise_c_wasm']);
   }
 }).call(this);
