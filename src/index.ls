@@ -164,6 +164,8 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 		 */
 		'decrypt' : (ciphertext) ->
 			@_receive_cipher_state['DecryptWithAd'](new Uint8Array(0), ciphertext)
+		'destroy' : !->
+			# TODO: destroy objects
 	Object.defineProperty(Encryptor::, 'constructor', {enumerable: false, value: Encryptor})
 	{
 		'ready'					: (callback) !->

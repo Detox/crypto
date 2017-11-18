@@ -42,7 +42,7 @@ Returns an object with properties:
 * `seed` (same as argument or random generate otherwise)
 * `ed25519` - Ed25519 keypair
   * `public` - Public key
-  * `private` - Private key (already hashed, as used in [https://github.com/orlp/ed25519])
+  * `private` - Private key (already hashed, as used in [orlp/ed25519](https://github.com/orlp/ed25519))
 * `x25519` - X25519 keypair
   * `public` - Public key
   * `private` - Private key
@@ -85,6 +85,9 @@ Encrypts plaintext into ciphertext for another side.
 
 ### detox_crypto.Encryptor.decrypt(plaintext : Uint8Array) : Unt8Array
 Decrypts plaintext from ciphertext from another side.
+
+### detox_crypto.Encryptor.destroy()
+Destroys stateful data structures and makes Encryptor unusable.
 
 Take a look at `src/index.ls` for JsDoc sections with arguments and return types as well as methods description, look at `tests/index.ls` for usage examples.
 

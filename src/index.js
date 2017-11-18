@@ -202,7 +202,8 @@
        */,
       'decrypt': function(ciphertext){
         return this._receive_cipher_state['DecryptWithAd'](new Uint8Array(0), ciphertext);
-      }
+      },
+      'destroy': function(){}
     };
     Object.defineProperty(Encryptor.prototype, 'constructor', {
       enumerable: false,
