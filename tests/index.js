@@ -6,7 +6,7 @@
  * @license   MIT License, see license.txt
  */
 (function(){
-  var lib, test, seed, ed25519_public, ed25519_private, x25519_public, x25519_private, key, plaintext, known_ciphertext;
+  var lib, test, seed, ed25519_public, ed25519_private, x25519_public, x25519_private, signature, key, plaintext, known_ciphertext;
   lib = require('..');
   test = require('tape');
   seed = Buffer.from('9fc9b77445f8b077c29fe27fc581c52beb668ecd25f5bb2ba5777dee2a411e97', 'hex');
@@ -14,19 +14,23 @@
   ed25519_private = Buffer.from('28e9e1d48cb0e52e437080e4a180058d7a42a07abcd05ea2ec4e6122cded8f6a0d2a6b9fd1878fd76ab20caecab666916ac3cc772fc57f8fa6e8dc3227bb8497', 'hex');
   x25519_public = Buffer.from('26100e941bdd2103038d8dec9a1884694736f591ee814e66ae6e2e2284757136', 'hex');
   x25519_private = Buffer.from('28e9e1d48cb0e52e437080e4a180058d7a42a07abcd05ea2ec4e6122cded8f6a', 'hex');
+  signature = Buffer.from('20f9031704a64240ccf8d5fa8964ecec10ed6b00ea60559c4d7e92ee7ef7e330376d0ca48a23119258c3b9ea2d4df5514e4e52653b02159c110b4f1ded3dfd00', 'hex');
   key = Buffer.from('4f99a089d76256347358580797cf4242bd3afc1b3e62f39a76ca066b64fae8346a9dbfc9e8e1c59506ee919954324f58', 'hex');
   plaintext = 'Hello, Detox!';
   known_ciphertext = Buffer.from('b6a8f817b079a5af10c3434a1d', 'hex');
   lib.ready(function(){
     test('Keypair generation', function(t){
       var keypair;
-      t.plan(6);
+      t.plan(9);
       keypair = lib.create_keypair(seed);
       t.equal(keypair.seed.join(','), seed.join(','), 'Seed is kept the same');
       t.equal(keypair.ed25519['public'].join(','), ed25519_public.join(','), 'Generated correct ed25519 public key');
       t.equal(keypair.ed25519['private'].join(','), ed25519_private.join(','), 'Generated correct ed25519 private key');
       t.equal(keypair.x25519['public'].join(','), x25519_public.join(','), 'Generated correct x25519 public key');
       t.equal(keypair.x25519['private'].join(','), x25519_private.join(','), 'Generated correct x25519 private key');
+      t.equal(lib.sign(Buffer.from(plaintext), ed25519_public, ed25519_private).join(','), signature.join(','), 'Correct signature');
+      t.ok(lib.verify(signature, Buffer.from(plaintext), ed25519_public), 'Correct verification');
+      t.notOk(lib.verify(ed25519_private, Buffer.from(plaintext), ed25519_public), 'Correct verification failure');
       t.equal(lib.convert_public_key(keypair.ed25519['public']).join(','), x25519_public.join(','), 'Ed25519 public key converted to X25519 correctly');
     });
     test('Rewrapping', function(t){

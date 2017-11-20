@@ -54,6 +54,24 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 	function convert_public_key (public_key)
 		ed25519-to-x25519['convert_public_key'](public_key)
 	/**
+	 * @param {!Uint8Array} data
+	 * @param {!Uint8Array} public_key Ed25519 public key
+	 * @param {!Uint8Array} private_key Ed25519 private key
+	 *
+	 * @return {!Uint8Array}
+	 */
+	function sign (data, public_key, private_key)
+		supercop['sign'](data, public_key, private_key)
+	/**
+	 * @param {!Uint8Array} signature
+	 * @param {!Uint8Array} data
+	 * @param {!Uint8Array} public_key Ed25519 public key
+	 *
+	 * @return {boolean}
+	 */
+	function verify (signature, data, public_key)
+		supercop['verify'](signature, data, public_key)
+	/**
 	 * @constructor
 	 *
 	 * @param {Uint8Array} key Empty when initialized by initiator and specified on responder side
@@ -180,6 +198,8 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 			noise-c['ready'](ready)
 		'create_keypair'		: create_keypair
 		'convert_public_key'	: convert_public_key
+		'sign'					: sign
+		'verify'				: verify
 		'Rewrapper'				: Rewrapper
 		'Encryptor'				: Encryptor
 	}
