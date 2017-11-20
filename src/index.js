@@ -223,7 +223,17 @@
       'decrypt': function(ciphertext){
         return this._receive_cipher_state['DecryptWithAd'](new Uint8Array(0), ciphertext);
       },
-      'destroy': function(){}
+      'destroy': function(){
+        if (this._handshake_state) {
+          this._handshake_state.free();
+        }
+        if (this._send_cipher_state) {
+          this._send_cipher_state.free();
+        }
+        if (this._receive_cipher_state) {
+          this._receive_cipher_state.free();
+        }
+      }
     };
     Object.defineProperty(Encryptor.prototype, 'constructor', {
       enumerable: false,

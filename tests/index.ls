@@ -83,4 +83,7 @@ test('Encryption', (t) !->
 	ciphertext			= responder.encrypt(Buffer.from(plaintext))
 	plaintext_decrypted	= initiator.decrypt(ciphertext)
 	t.equal(Buffer.from(plaintext_decrypted).toString(), plaintext, 'Plaintext decrypted correctly')
+
+	initiator.destroy()
+	responder.destroy()
 )
