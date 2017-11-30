@@ -50,6 +50,12 @@ Returns an object with properties:
 ### detox_crypto.convert_public_key(ed25519_public_key : Uint8Array) : Uint8Array
 Converts Ed25519 public key into X25519/Curve25519 public key. Returns `null` if conversion fails.
 
+### detox_crypto.sign(data : Uint8Array, ed25519_public_key : Uint8Array, ed25519_private_key : Uint8Array) : Uint8Array
+Signs data and returns 64 bytes signature.
+
+### detox_crypto.verify(signature : Uint8Array, data : Uint8Array, ed25519_public_key : Uint8Array) : boolean
+Verifies that signature corresponds to specified data and public key.
+
 ### detox_crypto.Rewrapper(key = null : Uint8Array)
 Constructor for Rewrapper object. Can be initialized with key (48 bytes, typically done on responder side) or key will be generated automatically (typically done on initiator side).
 
