@@ -92,7 +92,7 @@
      *
      * @param {Uint8Array} key Empty when initialized by initiator and specified on responder side
      *
-     * @return {Rewrapper}
+     * @return {!Rewrapper}
      */
     function Rewrapper(key){
       key == null && (key = null);
@@ -141,7 +141,7 @@
      * @param {boolean} initiator
      * @param {!Uint8Array} key Responder's public X25519 key if `initiator` is `true` or responder's private X25519 key if `initiator` is `false`
      *
-     * @return {Encryptor}
+     * @return {!Encryptor}
      *
      * @throws {Error}
      */
@@ -179,16 +179,6 @@
           this._handshake_common();
         }
         return message;
-      },
-      _handshake_common: function(){
-        var ref$;
-        if (this._handshake_state['GetAction']() === noiseC['constants']['NOISE_ACTION_SPLIT']) {
-          ref$ = this._handshake_state['Split'](), this._send_cipher_state = ref$[0], this._receive_cipher_state = ref$[1];
-          delete this._handshake_state;
-        } else if (this._handshake_state['GetAction']() === noiseC['constants']['NOISE_ACTION_FAILED']) {
-          delete this._handshake_state;
-          throw new Error('Noise handshake failed');
-        }
       }
       /**
        * @param {!Uint8Array} message Handshake message received from the other side
@@ -202,6 +192,26 @@
           }
           this._handshake_common();
         }
+      },
+      _handshake_common: function(){
+        var ref$, ad, plaintext;
+        if (this._handshake_state['GetAction']() === noiseC['constants']['NOISE_ACTION_SPLIT']) {
+          ref$ = this._handshake_state['Split'](), this._send_cipher_state = ref$[0], this._receive_cipher_state = ref$[1];
+          ad = new Uint8Array(0);
+          plaintext = new Uint8Array(48 - 16);
+          this._rewrapper_send_key = this._send_cipher_state['EncryptWithAd'](ad, plaintext);
+          this._rewrapper_receive_key = this._receive_cipher_state['EncryptWithAd'](ad, plaintext);
+          delete this._handshake_state;
+        } else if (this._handshake_state['GetAction']() === noiseC['constants']['NOISE_ACTION_FAILED']) {
+          delete this._handshake_state;
+          throw new Error('Noise handshake failed');
+        }
+      }
+      /**
+       * @return {!Array<Uint8Array>} Array `[send_key, receive_key]`, both keys 48 bytes
+       */,
+      'get_rewrapper_keys': function(){
+        return [this._rewrapper_send_key, this._rewrapper_receive_key];
       }
       /**
        * @param {!Uint8Array} plaintext

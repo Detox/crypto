@@ -51,7 +51,7 @@
     });
     test('Encryption', function(t){
       var initiator, responder, message, ciphertext, plaintext_decrypted;
-      t.plan(4);
+      t.plan(8);
       initiator = lib.Encryptor(true, x25519_public);
       responder = lib.Encryptor(false, x25519_private);
       message = initiator.get_handshake_message();
@@ -60,6 +60,10 @@
       message = responder.get_handshake_message();
       t.equal(message.length, 48, 'Message size is correct');
       initiator.put_handshake_message(message);
+      t.equal(initiator.get_rewrapper_keys()[0].length, 48, 'Rewrapper keys are correct #1');
+      t.equal(initiator.get_rewrapper_keys()[1].length, 48, 'Rewrapper keys are correct #2');
+      t.equal(initiator.get_rewrapper_keys()[0].toString(), responder.get_rewrapper_keys()[1].toString(), 'Rewrapper keys are the same #1');
+      t.equal(initiator.get_rewrapper_keys()[1].toString(), responder.get_rewrapper_keys()[0].toString(), 'Rewrapper keys are the same #2');
       ciphertext = initiator.encrypt(Buffer.from(plaintext));
       plaintext_decrypted = responder.decrypt(ciphertext);
       t.equal(Buffer.from(plaintext_decrypted).toString(), plaintext, 'Plaintext decrypted correctly');

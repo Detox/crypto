@@ -76,7 +76,7 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 	 *
 	 * @param {Uint8Array} key Empty when initialized by initiator and specified on responder side
 	 *
-	 * @return {Rewrapper}
+	 * @return {!Rewrapper}
 	 */
 	!function Rewrapper (key = null)
 		if !(@ instanceof Rewrapper)
@@ -116,7 +116,7 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 	 * @param {boolean} initiator
 	 * @param {!Uint8Array} key Responder's public X25519 key if `initiator` is `true` or responder's private X25519 key if `initiator` is `false`
 	 *
-	 * @return {Encryptor}
+	 * @return {!Encryptor}
 	 *
 	 * @throws {Error}
 	 */
@@ -147,13 +147,6 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 					message	= @_handshake_state['WriteMessage']()
 				@_handshake_common()
 			message
-		_handshake_common : !->
-			if @_handshake_state['GetAction']() == noise-c['constants']['NOISE_ACTION_SPLIT']
-				[@_send_cipher_state, @_receive_cipher_state] = @_handshake_state['Split']()
-				delete @_handshake_state
-			else if @_handshake_state['GetAction']() == noise-c['constants']['NOISE_ACTION_FAILED']
-				delete @_handshake_state
-				throw new Error('Noise handshake failed')
 		/**
 		 * @param {!Uint8Array} message Handshake message received from the other side
 		 *
@@ -164,6 +157,24 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 				if @_handshake_state['GetAction']() == noise-c['constants']['NOISE_ACTION_READ_MESSAGE']
 					@_handshake_state['ReadMessage'](message)
 				@_handshake_common()
+		_handshake_common : !->
+			if @_handshake_state['GetAction']() == noise-c['constants']['NOISE_ACTION_SPLIT']
+				[@_send_cipher_state, @_receive_cipher_state] = @_handshake_state['Split']()
+				# MAC length is 16 and we need 48 bytes key for rewrapper, let's just encrypt corresponding number of zeroes and use it as a key
+				# This way we don't need to send any data to get the same set of keys on both sides
+				ad						= new Uint8Array(0)
+				plaintext				= new Uint8Array(48 - 16)
+				@_rewrapper_send_key	= @_send_cipher_state['EncryptWithAd'](ad, plaintext)
+				@_rewrapper_receive_key	= @_receive_cipher_state['EncryptWithAd'](ad, plaintext)
+				delete @_handshake_state
+			else if @_handshake_state['GetAction']() == noise-c['constants']['NOISE_ACTION_FAILED']
+				delete @_handshake_state
+				throw new Error('Noise handshake failed')
+		/**
+		 * @return {!Array<Uint8Array>} Array `[send_key, receive_key]`, both keys 48 bytes
+		 */
+		'get_rewrapper_keys' : ->
+			[@_rewrapper_send_key, @_rewrapper_receive_key]
 		/**
 		 * @param {!Uint8Array} plaintext
 		 *

@@ -80,6 +80,9 @@ Get handshake message that should be send to another side.
 ### detox_crypto.Encryptor.put_handshake_message(message : Unt8Array)
 Put handshake message that was received from another side.
 
+### detox_crypto.Encryptor.get_rewrapper_keys() : Array
+Get rewrapper keys derived from handshake. 2 elements are `Uint8Array`s of 48 bytes, first one most be used for sending data (wrapping) and second for receiving (unwrapping).
+
 ### detox_crypto.Encryptor.encrypt(plaintext : Uint8Array) : Unt8Array
 Encrypts plaintext into ciphertext for another side.
 
