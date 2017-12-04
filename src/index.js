@@ -194,15 +194,16 @@
         }
       },
       _handshake_common: function(){
-        var ref$, ad, plaintext;
-        if (this._handshake_state['GetAction']() === noiseC['constants']['NOISE_ACTION_SPLIT']) {
+        var action, ref$, ad, plaintext;
+        action = this._handshake_state['GetAction']();
+        if (action === noiseC['constants']['NOISE_ACTION_SPLIT']) {
           ref$ = this._handshake_state['Split'](), this._send_cipher_state = ref$[0], this._receive_cipher_state = ref$[1];
           ad = new Uint8Array(0);
           plaintext = new Uint8Array(48 - 16);
           this._rewrapper_send_key = this._send_cipher_state['EncryptWithAd'](ad, plaintext);
           this._rewrapper_receive_key = this._receive_cipher_state['EncryptWithAd'](ad, plaintext);
           delete this._handshake_state;
-        } else if (this._handshake_state['GetAction']() === noiseC['constants']['NOISE_ACTION_FAILED']) {
+        } else if (action === noiseC['constants']['NOISE_ACTION_FAILED']) {
           delete this._handshake_state;
           throw new Error('Noise handshake failed');
         }
