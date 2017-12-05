@@ -31,7 +31,7 @@ requirejs(['@detox/crypto'], function (detox_crypto) {
 })
 ```
 
-# API
+## API
 ### detox_crypto.ready(callback)
 * `callback` - Callback function that is called when library is ready for use
 
@@ -56,7 +56,7 @@ Signs data and returns 64 bytes signature.
 ### detox_crypto.verify(signature : Uint8Array, data : Uint8Array, ed25519_public_key : Uint8Array) : boolean
 Verifies that signature corresponds to specified data and public key.
 
-### detox_crypto.Rewrapper(key = null : Uint8Array)
+### detox_crypto.Rewrapper(key = null : Uint8Array) : detox_crypto.Rewrapper
 Constructor for Rewrapper object. Can be initialized with key (48 bytes, typically done on responder side) or key will be generated automatically (typically done on initiator side).
 
 Uses AEZ block cipher.
@@ -70,7 +70,7 @@ Wraps plaintext into ciphertext.
 ### detox_crypto.Rewrapper.unwrap(plaintext : Uint8Array) : Uint8Array
 Unwraps plaintext from ciphertext, inverse to `wrap()`.
 
-### detox_crypto.Encryptor(initiator : boolean, key : Uint8Array)
+### detox_crypto.Encryptor(initiator : boolean, key : Uint8Array) : detox_crypto.Encryptor
 Constructor for Encryptor object. If initialized for initiator then `key` will be public key (X25519) of the responder. If initialized for responder then `key` will be private key (X25519) of the responder.
 
 Uses Noise protocol (Noise_NK_25519_ChaChaPoly_BLAKE2b).
