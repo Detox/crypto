@@ -93,3 +93,14 @@ test('Encryption', (t) !->
 	initiator.destroy()
 	responder.destroy()
 )
+
+test('One-way encryption', (t) !->
+	t.plan(2)
+
+	ciphertext	= lib.one_way_encrypt(x25519_public, Buffer.from(plaintext))
+
+	t.equal(ciphertext.length, 48 + Buffer.from(plaintext).length + 16, 'Ciphertext length is correct')
+
+	plaintext_decrypted	= lib.one_way_decrypt(x25519_private, ciphertext)
+	t.equal(Buffer.from(plaintext_decrypted).toString(), plaintext, 'Plaintext decrypted correctly')
+)

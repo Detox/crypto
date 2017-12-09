@@ -6,7 +6,7 @@
  * @license   MIT License, see license.txt
  */
 (function(){
-  var randombytes, NOISE_PROTOCOL_NAME;
+  var randombytes, TWO_WAY_NOISE_PROTOCOL_NAME, ONE_WAY_NOISE_PROTOCOL_NAME, HANDSHAKE_MESSAGE_LENGTH;
   if (typeof exports === 'object') {
     randombytes = require('crypto').randomBytes;
   } else {
@@ -17,7 +17,9 @@
       return array;
     };
   }
-  NOISE_PROTOCOL_NAME = 'Noise_NK_25519_ChaChaPoly_BLAKE2b';
+  TWO_WAY_NOISE_PROTOCOL_NAME = 'Noise_NK_25519_ChaChaPoly_BLAKE2b';
+  ONE_WAY_NOISE_PROTOCOL_NAME = 'Noise_N_25519_ChaChaPoly_BLAKE2b';
+  HANDSHAKE_MESSAGE_LENGTH = 48;
   /**
    * Increment nonce from `nonce` argument in place
    *
@@ -150,10 +152,10 @@
         return new Encryptor(initiator, key);
       }
       if (initiator) {
-        this._handshake_state = noiseC['HandshakeState'](NOISE_PROTOCOL_NAME, noiseC['constants']['NOISE_ROLE_INITIATOR']);
+        this._handshake_state = noiseC['HandshakeState'](TWO_WAY_NOISE_PROTOCOL_NAME, noiseC['constants']['NOISE_ROLE_INITIATOR']);
         this._handshake_state['Initialize'](null, null, key);
       } else {
-        this._handshake_state = noiseC['HandshakeState'](NOISE_PROTOCOL_NAME, noiseC['constants']['NOISE_ROLE_RESPONDER']);
+        this._handshake_state = noiseC['HandshakeState'](TWO_WAY_NOISE_PROTOCOL_NAME, noiseC['constants']['NOISE_ROLE_RESPONDER']);
         this._handshake_state['Initialize'](null, key);
       }
     }
@@ -236,13 +238,13 @@
       },
       'destroy': function(){
         if (this._handshake_state) {
-          this._handshake_state.free();
+          this._handshake_state['free']();
         }
         if (this._send_cipher_state) {
-          this._send_cipher_state.free();
+          this._send_cipher_state['free']();
         }
         if (this._receive_cipher_state) {
-          this._receive_cipher_state.free();
+          this._receive_cipher_state['free']();
         }
       }
     };
@@ -250,6 +252,49 @@
       enumerable: false,
       value: Encryptor
     });
+    /**
+     * @param {!Uint8Array} public_key	Responder's public X25519 key
+     * @param {!Uint8Array} plaintext
+     *
+     * @return {!Uint8Array}
+     *
+     * @throws {Error}
+     */
+    function one_way_encrypt(public_key, plaintext){
+      var handshake_state, handshake_message, ref$, send_cipher_state, receive_cipher_state, ciphertext, x$;
+      handshake_state = noiseC['HandshakeState'](ONE_WAY_NOISE_PROTOCOL_NAME, noiseC['constants']['NOISE_ROLE_INITIATOR']);
+      handshake_state['Initialize'](null, null, public_key);
+      handshake_message = handshake_state['WriteMessage']();
+      ref$ = handshake_state['Split'](), send_cipher_state = ref$[0], receive_cipher_state = ref$[1];
+      ciphertext = send_cipher_state['EncryptWithAd'](new Uint8Array(0), plaintext);
+      send_cipher_state['free']();
+      receive_cipher_state['free']();
+      x$ = new Uint8Array(HANDSHAKE_MESSAGE_LENGTH + ciphertext.length);
+      x$.set(handshake_message);
+      x$.set(ciphertext, HANDSHAKE_MESSAGE_LENGTH);
+      return x$;
+    }
+    /**
+     * @param {!Uint8Array} private_key	Responder's private X25519 key
+     * @param {!Uint8Array} message
+     *
+     * @return {!Uint8Array}
+     *
+     * @throws {Error}
+     */
+    function one_way_decrypt(private_key, message){
+      var handshake_message, ciphertext, handshake_state, ref$, send_cipher_state, receive_cipher_state, plaintext;
+      handshake_message = message.subarray(0, HANDSHAKE_MESSAGE_LENGTH);
+      ciphertext = message.subarray(HANDSHAKE_MESSAGE_LENGTH);
+      handshake_state = noiseC['HandshakeState'](ONE_WAY_NOISE_PROTOCOL_NAME, noiseC['constants']['NOISE_ROLE_RESPONDER']);
+      handshake_state['Initialize'](null, private_key);
+      handshake_state['ReadMessage'](handshake_message);
+      ref$ = handshake_state['Split'](), send_cipher_state = ref$[0], receive_cipher_state = ref$[1];
+      plaintext = receive_cipher_state['DecryptWithAd'](new Uint8Array(0), ciphertext);
+      send_cipher_state['free']();
+      receive_cipher_state['free']();
+      return plaintext;
+    }
     return {
       'ready': function(callback){
         var wait_for;
@@ -270,7 +315,9 @@
       'sign': sign,
       'verify': verify,
       'Rewrapper': Rewrapper,
-      'Encryptor': Encryptor
+      'Encryptor': Encryptor,
+      'one_way_encrypt': one_way_encrypt,
+      'one_way_decrypt': one_way_decrypt
     };
   }
   if (typeof define === 'function' && define['amd']) {

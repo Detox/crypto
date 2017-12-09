@@ -12,7 +12,9 @@ else
 		crypto.getRandomValues(array)
 		array
 
-const NOISE_PROTOCOL_NAME = 'Noise_NK_25519_ChaChaPoly_BLAKE2b'
+const TWO_WAY_NOISE_PROTOCOL_NAME	= 'Noise_NK_25519_ChaChaPoly_BLAKE2b'
+const ONE_WAY_NOISE_PROTOCOL_NAME	= 'Noise_N_25519_ChaChaPoly_BLAKE2b'
+const HANDSHAKE_MESSAGE_LENGTH	= 48
 
 /**
  * Increment nonce from `nonce` argument in place
@@ -124,10 +126,10 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 		if !(@ instanceof Encryptor)
 			return new Encryptor(initiator, key)
 		if initiator
-			@_handshake_state	= noise-c['HandshakeState'](NOISE_PROTOCOL_NAME, noise-c['constants']['NOISE_ROLE_INITIATOR'])
+			@_handshake_state	= noise-c['HandshakeState'](TWO_WAY_NOISE_PROTOCOL_NAME, noise-c['constants']['NOISE_ROLE_INITIATOR'])
 			@_handshake_state['Initialize'](null, null, key)
 		else
-			@_handshake_state	= noise-c['HandshakeState'](NOISE_PROTOCOL_NAME, noise-c['constants']['NOISE_ROLE_RESPONDER'])
+			@_handshake_state	= noise-c['HandshakeState'](TWO_WAY_NOISE_PROTOCOL_NAME, noise-c['constants']['NOISE_ROLE_RESPONDER'])
 			@_handshake_state['Initialize'](null, key)
 	Encryptor::	=
 		/**
@@ -196,12 +198,50 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 			@_receive_cipher_state['DecryptWithAd'](new Uint8Array(0), ciphertext)
 		'destroy' : !->
 			if @_handshake_state
-				@_handshake_state.free()
+				@_handshake_state['free']()
 			if @_send_cipher_state
-				@_send_cipher_state.free()
+				@_send_cipher_state['free']()
 			if @_receive_cipher_state
-				@_receive_cipher_state.free()
+				@_receive_cipher_state['free']()
 	Object.defineProperty(Encryptor::, 'constructor', {enumerable: false, value: Encryptor})
+	/**
+	 * @param {!Uint8Array} public_key	Responder's public X25519 key
+	 * @param {!Uint8Array} plaintext
+	 *
+	 * @return {!Uint8Array}
+	 *
+	 * @throws {Error}
+	 */
+	function one_way_encrypt (public_key, plaintext)
+		handshake_state								= noise-c['HandshakeState'](ONE_WAY_NOISE_PROTOCOL_NAME, noise-c['constants']['NOISE_ROLE_INITIATOR'])
+		handshake_state['Initialize'](null, null, public_key)
+		handshake_message							= handshake_state['WriteMessage']()
+		[send_cipher_state, receive_cipher_state]	= handshake_state['Split']()
+		ciphertext									= send_cipher_state['EncryptWithAd'](new Uint8Array(0), plaintext)
+		send_cipher_state['free']()
+		receive_cipher_state['free']()
+		new Uint8Array(HANDSHAKE_MESSAGE_LENGTH + ciphertext.length)
+			..set(handshake_message)
+			..set(ciphertext, HANDSHAKE_MESSAGE_LENGTH)
+	/**
+	 * @param {!Uint8Array} private_key	Responder's private X25519 key
+	 * @param {!Uint8Array} message
+	 *
+	 * @return {!Uint8Array}
+	 *
+	 * @throws {Error}
+	 */
+	function one_way_decrypt (private_key, message)
+		handshake_message							= message.subarray(0, HANDSHAKE_MESSAGE_LENGTH)
+		ciphertext									= message.subarray(HANDSHAKE_MESSAGE_LENGTH)
+		handshake_state								= noise-c['HandshakeState'](ONE_WAY_NOISE_PROTOCOL_NAME, noise-c['constants']['NOISE_ROLE_RESPONDER'])
+		handshake_state['Initialize'](null, private_key)
+		handshake_state['ReadMessage'](handshake_message)
+		[send_cipher_state, receive_cipher_state]	= handshake_state['Split']()
+		plaintext									= receive_cipher_state['DecryptWithAd'](new Uint8Array(0), ciphertext)
+		send_cipher_state['free']()
+		receive_cipher_state['free']()
+		plaintext
 	{
 		'ready'					: (callback) !->
 			wait_for	= 4
@@ -219,6 +259,8 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 		'verify'				: verify
 		'Rewrapper'				: Rewrapper
 		'Encryptor'				: Encryptor
+		'one_way_encrypt'		: one_way_encrypt
+		'one_way_decrypt'		: one_way_decrypt
 	}
 
 if typeof define == 'function' && define['amd']

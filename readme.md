@@ -4,7 +4,7 @@ High-level utilities that combine under simple interfaces complexity of the cryp
 Essentially provides wrapper functions and objects for:
 * Ed25519 and X25519 keys creation
 * AEZ block cipher
-* Noise protocol (Noise_NK_25519_ChaChaPoly_BLAKE2b)
+* Noise protocol (Noise_NK_25519_ChaChaPoly_BLAKE2b, Noise_N_25519_ChaChaPoly_BLAKE2b)
 
 ## How to install
 ```
@@ -97,6 +97,20 @@ Decrypts plaintext from ciphertext from another side.
 
 ### detox_crypto.Encryptor.destroy()
 Destroys stateful data structures and makes Encryptor unusable.
+
+### detox_crypto.one_way_encrypt(public_key : Uint8Array, plaintext : Uint8Array) : Uint8Array
+One-way encryption for specified X25519 public key.
+
+Uses Noise protocol (Noise_N_25519_ChaChaPoly_BLAKE2b).
+
+Returns combined handshake message and ciphertext.
+
+### detox_crypto.one_way_decrypt(private_key : Uint8Array, message : Uint8Array) : Uint8Array
+One-way decryption of the message for specified X25519 private key.
+
+Uses Noise protocol (Noise_N_25519_ChaChaPoly_BLAKE2b).
+
+Takes combined handshake message and ciphertext as input message and returns plaintext.
 
 Take a look at `src/index.ls` for JsDoc sections with arguments and return types as well as methods description, look at `tests/index.ls` for usage examples.
 
