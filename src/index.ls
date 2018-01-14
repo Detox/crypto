@@ -1,8 +1,7 @@
 /**
- * @package   Detox crypto
- * @author    Nazar Mokrynskyi <nazar@mokrynskyi.com>
- * @copyright Copyright (c) 2017, Nazar Mokrynskyi
- * @license   MIT License, see license.txt
+ * @package Detox crypto
+ * @author  Nazar Mokrynskyi <nazar@mokrynskyi.com>
+ * @license 0BSD
  */
 if typeof exports == 'object'
 	randombytes	= require('crypto').randomBytes
@@ -21,7 +20,7 @@ const HANDSHAKE_MESSAGE_LENGTH	= 48
  *
  * @param {!Uint8Array} nonce
  */
-function increment_nonce (nonce)
+!function increment_nonce (nonce)
 	for , index in nonce by -1
 		++nonce[index]
 		if nonce[index] != 0

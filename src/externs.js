@@ -1,8 +1,7 @@
 /**
- * @package   Detox crypto
- * @author    Nazar Mokrynskyi <nazar@mokrynskyi.com>
- * @copyright Copyright (c) 2017, Nazar Mokrynskyi
- * @license   MIT License, see license.txt
+ * @package Detox crypto
+ * @author  Nazar Mokrynskyi <nazar@mokrynskyi.com>
+ * @license 0BSD
  */
 /**
  * @param {Array} dependencies
@@ -16,7 +15,6 @@ var require = function (module) {};
 var exports = {};
 var module = {};
 module.exports	= {};
-var crypto = {};
 /**
  * @param {number} size
  *
