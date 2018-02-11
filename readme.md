@@ -1,4 +1,4 @@
-# Detox crypto [![Travis CI](https://img.shields.io/travis/Detox/detox-crypto/master.svg?label=Travis%20CI)](https://travis-ci.org/Detox/detox-crypto)
+# Detox crypto [![Travis CI](https://img.shields.io/travis/Detox/crypto/master.svg?label=Travis%20CI)](https://travis-ci.org/Detox/crypto)
 High-level utilities that combine under simple interfaces complexity of the cryptographic layer used in Detox project.
 
 Essentially provides wrapper functions and objects for:
