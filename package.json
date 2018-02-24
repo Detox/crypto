@@ -9,7 +9,7 @@
 		"x25519",
 		"noise"
 	],
-	"version"         : "0.4.1",
+	"version"         : "0.5.0",
 	"homepage"        : "https://github.com/Detox/crypto",
 	"author"          : "Nazar Mokrynskyi <nazar@mokrynskyi.com>",
 	"repository"      : {
@@ -25,13 +25,13 @@
 		"test" : "tape tests/**/*.js"
 	},
 	"dependencies"    : {
-		"aez.wasm"               : "^0.1.0",
-		"ed25519-to-x25519.wasm" : "^0.1.0",
-		"noise-c.wasm"           : "^0.1.2",
-		"supercop.wasm"          : "^4.1.0"
+		"aez.wasm"               : "^0.2.0",
+		"ed25519-to-x25519.wasm" : "^0.2.0",
+		"noise-c.wasm"           : "^0.2.0",
+		"supercop.wasm"          : "^5.0.1"
 	},
 	"devDependencies" : {
 		"build-gc" : "^0.1.1",
-		"tape"     : "^4.8.0"
+		"tape"     : "^4.9.0"
 	}
 }
