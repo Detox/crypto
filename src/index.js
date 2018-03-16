@@ -132,7 +132,6 @@
       }
     };
     Object.defineProperty(Rewrapper.prototype, 'constructor', {
-      enumerable: false,
       value: Rewrapper
     });
     /**
@@ -247,7 +246,6 @@
       }
     };
     Object.defineProperty(Encryptor.prototype, 'constructor', {
-      enumerable: false,
       value: Encryptor
     });
     /**

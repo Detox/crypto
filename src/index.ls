@@ -110,7 +110,7 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 			increment_nonce(@_nonce)
 			# No need to catch exception since we don't have ciphertext expansion
 			aez['decrypt'](ciphertext, new Uint8Array(0), @_nonce, @_key, 0)
-	Object.defineProperty(Rewrapper::, 'constructor', {enumerable: false, value: Rewrapper})
+	Object.defineProperty(Rewrapper::, 'constructor', {value: Rewrapper})
 	/**
 	 * @constructor
 	 *
@@ -202,7 +202,7 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c)
 				@_send_cipher_state['free']()
 			if @_receive_cipher_state
 				@_receive_cipher_state['free']()
-	Object.defineProperty(Encryptor::, 'constructor', {enumerable: false, value: Encryptor})
+	Object.defineProperty(Encryptor::, 'constructor', {value: Encryptor})
 	/**
 	 * @param {!Uint8Array} public_key	Responder's public X25519 key
 	 * @param {!Uint8Array} plaintext
