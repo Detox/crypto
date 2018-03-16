@@ -112,6 +112,9 @@ Uses Noise protocol (Noise_N_25519_ChaChaPoly_BLAKE2b).
 
 Takes combined handshake message and ciphertext as input message and returns plaintext.
 
+### detox_crypto.Uint8Array(data : Uint8Array) : Uint8Array
+Returns SHA3-256 hash if `data`.
+
 Take a look at `src/index.ls` for JsDoc sections with arguments and return types as well as methods description, look at `tests/index.ls` for usage examples.
 
 ## Contribution
