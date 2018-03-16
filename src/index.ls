@@ -253,15 +253,11 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c, jsSHA)
 
 	{
 		'ready'					: (callback) !->
-			wait_for	= 4
-			!function ready
-				--wait_for
-				if !wait_for
-					callback()
-			supercop['ready'](ready)
-			ed25519-to-x25519['ready'](ready)
-			aez['ready'](ready)
-			noise-c['ready'](ready)
+			<-! supercop['ready']
+			<-! ed25519-to-x25519['ready']
+			<-! aez['ready']
+			<-! noise-c['ready']
+			callback()
 		'create_keypair'		: create_keypair
 		'convert_public_key'	: convert_public_key
 		'sign'					: sign

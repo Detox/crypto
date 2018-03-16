@@ -304,18 +304,15 @@
     }
     return {
       'ready': function(callback){
-        var wait_for;
-        wait_for = 4;
-        function ready(){
-          --wait_for;
-          if (!wait_for) {
-            callback();
-          }
-        }
-        supercop['ready'](ready);
-        ed25519ToX25519['ready'](ready);
-        aez['ready'](ready);
-        noiseC['ready'](ready);
+        supercop['ready'](function(){
+          ed25519ToX25519['ready'](function(){
+            aez['ready'](function(){
+              noiseC['ready'](function(){
+                callback();
+              });
+            });
+          });
+        });
       },
       'create_keypair': create_keypair,
       'convert_public_key': convert_public_key,
