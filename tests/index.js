@@ -5,7 +5,7 @@
  * @license 0BSD
  */
 (function(){
-  var lib, test, seed, ed25519_public, ed25519_private, x25519_public, x25519_private, signature, key, plaintext, known_ciphertext;
+  var lib, test, seed, ed25519_public, ed25519_private, x25519_public, x25519_private, signature, key, plaintext, known_ciphertext, known_hash;
   lib = require('..');
   test = require('tape');
   seed = Buffer.from('9fc9b77445f8b077c29fe27fc581c52beb668ecd25f5bb2ba5777dee2a411e97', 'hex');
@@ -17,6 +17,7 @@
   key = Buffer.from('4f99a089d76256347358580797cf4242bd3afc1b3e62f39a76ca066b64fae8346a9dbfc9e8e1c59506ee919954324f58', 'hex');
   plaintext = 'Hello, Detox!';
   known_ciphertext = Buffer.from('b6a8f817b079a5af10c3434a1d', 'hex');
+  known_hash = Buffer.from('a54dc21dd6b1fa209a67f1f5ea2c6dd5813a4bfe323281a1e2e477a9909dbfb0', 'hex');
   lib.ready(function(){
     test('Keypair generation', function(t){
       var keypair;
@@ -79,6 +80,10 @@
       t.equal(ciphertext.length, 48 + Buffer.from(plaintext).length + 16, 'Ciphertext length is correct');
       plaintext_decrypted = lib.one_way_decrypt(x25519_private, ciphertext);
       t.equal(Buffer.from(plaintext_decrypted).toString(), plaintext, 'Plaintext decrypted correctly');
+    });
+    test('SHA3-256', function(t){
+      t.plan(1);
+      t.equal(lib.sha3_256(seed).join(','), known_hash.join(','), 'SHA3-256 hash computed correctly');
     });
   });
 }).call(this);
