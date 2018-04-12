@@ -17,7 +17,7 @@ key					= Buffer.from('4f99a089d76256347358580797cf4242bd3afc1b3e62f39a76ca066b6
 plaintext			= 'Hello, Detox!'
 known_ciphertext	= Buffer.from('b6a8f817b079a5af10c3434a1d', 'hex')
 
-known_hash			= Buffer.from('a54dc21dd6b1fa209a67f1f5ea2c6dd5813a4bfe323281a1e2e477a9909dbfb0', 'hex')
+known_hash			= Buffer.from('3c90fb006657254ec5b6db421018f96c41a01cc73b3563b7b710f5ab0cfb1629', 'hex')
 
 <-! lib.ready
 test('Keypair generation', (t) !->
@@ -106,8 +106,8 @@ test('One-way encryption', (t) !->
 	t.equal(Buffer.from(plaintext_decrypted).toString(), plaintext, 'Plaintext decrypted correctly')
 )
 
-test('SHA3-256', (t) !->
+test('Blake2b-256', (t) !->
 	t.plan(1)
 
-	t.equal(lib.sha3_256(seed).join(','), known_hash.join(','), 'SHA3-256 hash computed correctly')
+	t.equal(lib.blake2b_256(seed).join(','), known_hash.join(','), 'Blake2b-256 hash computed correctly')
 )

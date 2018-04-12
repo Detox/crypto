@@ -34,7 +34,7 @@
       }
     }
   }
-  function Crypto(supercop, ed25519ToX25519, aez, noiseC, jsSHA){
+  function Crypto(supercop, ed25519ToX25519, aez, noiseC, blake2){
     /**
      * @param {Uint8Array} seed Random seed will be generated if `null`
      *
@@ -296,11 +296,8 @@
      *
      * @return {!Uint8Array}
      */
-    function sha3_256(data){
-      var shaObj;
-      shaObj = new jsSHA('SHA3-256', 'ARRAYBUFFER');
-      shaObj['update'](data);
-      return new Uint8Array(shaObj['getHash']('ARRAYBUFFER'));
+    function blake2b_256(data){
+      return blake2['Blake2b'](32)['update'](data)['final']();
     }
     return {
       'ready': function(callback){
@@ -322,14 +319,14 @@
       'Encryptor': Encryptor,
       'one_way_encrypt': one_way_encrypt,
       'one_way_decrypt': one_way_decrypt,
-      'sha3_256': sha3_256
+      'blake2b_256': blake2b_256
     };
   }
   if (typeof define === 'function' && define['amd']) {
-    define(['supercop.wasm', 'ed25519-to-x25519.wasm', 'aez.wasm', 'noise-c.wasm', 'jssha/src/sha3'], Crypto);
+    define(['supercop.wasm', 'ed25519-to-x25519.wasm', 'aez.wasm', 'noise-c.wasm', 'blake2.wasm'], Crypto);
   } else if (typeof exports === 'object') {
-    module.exports = Crypto(require('supercop.wasm'), require('ed25519-to-x25519.wasm'), require('aez.wasm'), require('noise-c.wasm'), require('jssha/src/sha3'));
+    module.exports = Crypto(require('supercop.wasm'), require('ed25519-to-x25519.wasm'), require('aez.wasm'), require('noise-c.wasm'), require('blake2.wasm'));
   } else {
-    this['detox_crypto'] = Crypto(this['supercop_wasm'], this['ed25519_to_x25519_wasm'], this['aez_wasm'], this['noise_c_wasm'], this['jsSHA']);
+    this['detox_crypto'] = Crypto(this['supercop_wasm'], this['ed25519_to_x25519_wasm'], this['aez_wasm'], this['noise_c_wasm'], this['blake2_wasm']);
   }
 }).call(this);

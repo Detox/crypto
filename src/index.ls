@@ -27,7 +27,7 @@ const HANDSHAKE_MESSAGE_LENGTH	= 48
 			break
 
 
-function Crypto (supercop, ed25519-to-x25519, aez, noise-c, jsSHA)
+function Crypto (supercop, ed25519-to-x25519, aez, noise-c, blake2)
 	/**
 	 * @param {Uint8Array} seed Random seed will be generated if `null`
 	 *
@@ -246,10 +246,10 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c, jsSHA)
 	 *
 	 * @return {!Uint8Array}
 	 */
-	function sha3_256 (data)
-		shaObj	= new jsSHA('SHA3-256', 'ARRAYBUFFER') # TODO: Switch to Uint8Array once https://github.com/Caligatio/jsSHA/issues/71 is implemented
-		shaObj['update'](data) # TODO: Strictly speaking not correct, but works because of implementation details of jsSHA
-		new Uint8Array(shaObj['getHash']('ARRAYBUFFER'))
+	function blake2b_256 (data)
+		blake2['Blake2b'](32)
+			.['update'](data)
+			.['final']()
 
 	{
 		'ready'					: (callback) !->
@@ -266,15 +266,15 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c, jsSHA)
 		'Encryptor'				: Encryptor
 		'one_way_encrypt'		: one_way_encrypt
 		'one_way_decrypt'		: one_way_decrypt
-		'sha3_256'				: sha3_256
+		'blake2b_256'			: blake2b_256
 	}
 
 if typeof define == 'function' && define['amd']
 	# AMD
-	define(['supercop.wasm', 'ed25519-to-x25519.wasm', 'aez.wasm', 'noise-c.wasm', 'jssha/src/sha3'], Crypto)
+	define(['supercop.wasm', 'ed25519-to-x25519.wasm', 'aez.wasm', 'noise-c.wasm', 'blake2.wasm'], Crypto)
 else if typeof exports == 'object'
 	# CommonJS
-	module.exports = Crypto(require('supercop.wasm'), require('ed25519-to-x25519.wasm'), require('aez.wasm'), require('noise-c.wasm'), require('jssha/src/sha3'))
+	module.exports = Crypto(require('supercop.wasm'), require('ed25519-to-x25519.wasm'), require('aez.wasm'), require('noise-c.wasm'), require('blake2.wasm'))
 else
 	# Browser globals
-	@'detox_crypto' = Crypto(@'supercop_wasm', @'ed25519_to_x25519_wasm', @'aez_wasm', @'noise_c_wasm', @'jsSHA')
+	@'detox_crypto' = Crypto(@'supercop_wasm', @'ed25519_to_x25519_wasm', @'aez_wasm', @'noise_c_wasm', @'blake2_wasm')
