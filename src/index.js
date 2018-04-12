@@ -301,11 +301,13 @@
     }
     return {
       'ready': function(callback){
-        supercop['ready'](function(){
-          ed25519ToX25519['ready'](function(){
-            aez['ready'](function(){
+        aez['ready'](function(){
+          blake2['ready'](function(){
+            ed25519ToX25519['ready'](function(){
               noiseC['ready'](function(){
-                callback();
+                supercop['ready'](function(){
+                  callback();
+                });
               });
             });
           });

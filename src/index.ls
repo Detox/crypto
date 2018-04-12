@@ -253,10 +253,11 @@ function Crypto (supercop, ed25519-to-x25519, aez, noise-c, blake2)
 
 	{
 		'ready'					: (callback) !->
-			<-! supercop['ready']
-			<-! ed25519-to-x25519['ready']
 			<-! aez['ready']
+			<-! blake2['ready']
+			<-! ed25519-to-x25519['ready']
 			<-! noise-c['ready']
+			<-! supercop['ready']
 			callback()
 		'create_keypair'		: create_keypair
 		'convert_public_key'	: convert_public_key
